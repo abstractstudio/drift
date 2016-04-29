@@ -1,0 +1,21 @@
+<html>
+    <head>
+    	<title>Chincoteague Drift</title>
+    	<style>
+    		body { text-align: center; margin-top: 4em; background-color: #DDD; }
+    		canvas { border-radius: 0.5em; }
+    	</style>
+    	<script type="text/javascript">
+    		var ENGINE = "abstractengine/";
+    		function start() {
+				var canvas = document.getElementById("canvas");
+				var engine = new Engine(canvas);
+				engine.start();
+			}
+    	</script>
+    	<script type="text/javascript" src="abstractengine/setup.js"></script>
+	</head>
+	<body onload="javascript: start();" style="text-align: center; margin-top: 4em;">
+		<canvas width=600 height=700 id="canvas">HTML5 unavailable</canvas>
+	</body>
+</html>
