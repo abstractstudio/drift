@@ -9,7 +9,8 @@
     		var ENGINE = "abstractengine/";
     		function start() {
     			require(["drift.js"], function() {
-					var canvas = document.getElementById("canvas");
+    				console.log("Loaded Drift");
+					var canvas = document.getElementById("canvas"); 
 					var engine = new Drift(canvas);
 					engine.start();
 				});
@@ -17,7 +18,7 @@
     	</script>
     	<script type="text/javascript" src="abstractengine/setup.js"></script>
 	</head>
-	<body onload="javascript: start();" style="text-align: center; margin-top: 4em;">
+	<body style="text-align: center; margin-top: 4em;">
 		<canvas width=600 height=700 id="canvas">HTML5 unavailable</canvas>
 		<p id="log"></p>
 	</body>
