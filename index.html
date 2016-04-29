@@ -8,9 +8,11 @@
     	<script type="text/javascript">
     		var ENGINE = "abstractengine/";
     		function start() {
-				var canvas = document.getElementById("canvas");
-				var engine = new Engine(canvas);
-				engine.start();
+    			require(["drift.js"], function() {
+					var canvas = document.getElementById("canvas");
+					var engine = new Drift(canvas);
+					engine.start();
+				});
 			}
     	</script>
     	<script type="text/javascript" src="abstractengine/setup.js"></script>
