@@ -2,6 +2,7 @@ function Boat() {
 	
 	this.x = 300;
 	this.y = 600;
+	this.a = 0;
 	this.r = 0;
 
 	this.render = function(context) {
@@ -17,7 +18,4 @@ function Drift(canvas) {
 }
 
 Boat.prototype = new Sprite();
-Boat.prototype.constructor = Sprite;
-
 Drift.prototype = new Engine();
-Drift.prototype.constructor = Engine;
