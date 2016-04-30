@@ -23,7 +23,7 @@ function Boat() {
     this.xb = [50, 550];
     this.vb = [-1.5, 1.5];
     
-    this.width = 48;
+    this.width = 16*3;
     this.height = 29*3;
     this.numRows = 1;
     this.numColumns = 3;
@@ -35,14 +35,26 @@ function Boat() {
     this.addAnimation(new Animation("boat", [0, 1, 2]));
 
 	this.update = function(delta) {
-		if (keys[KEY.LEFT] || keys[KEY.A]) this.rotation = Math.min(this.rb[1], this.rotation+this.rv*delta/16*this.rate);
-        if (keys[KEY.RIGHT] || keys[KEY.D]) this.rotation = Math.max(this.rb[0], this.rotation-this.rv*delta/16*this.rate);
+        
+        var left = keys[KEY.LEFT] || keys[KEY.A];
+        var right = keys[KEY.RIGHT] || keys[KEY.D];
+        
+		if (left && !right) {
+            this.rotation = Math.min(this.rb[1], this.rotation+this.rv*delta/16*this.rate);
+            this.getCurrentAnimation().frameIndex = 0;
+        } else if (right && !left) {
+            this.rotation = Math.max(this.rb[0], this.rotation-this.rv*delta/16*this.rate);
+            this.getCurrentAnimation().frameIndex = 2;
+        } else {
+            this.getCurrentAnimation().frameIndex = 1;
+        }
+        
         this.v += -Math.sin(this.rotation) * this.a;
         this.v = bound(this.v, this.vb);
         this.pos.x += this.v * delta/16 * this.rate;
         this.pos.x = bound(this.pos.x, this.xb);
         
-        this.getCurrentAnimation().frameIndex = 1;
+        Boat.prototype.update.call(this, delta);
 	}
 
 }
@@ -59,7 +71,7 @@ function Drift(canvas) {
         
         new Engine().setup.call(this);
         
-        this.loadImages({"boat": "assets/boat2.png"});
+        this.loadImages({"boat": "assets/boat3.png"});
         
         var that = this;
         document.addEventListener("mousedown", function(e) {
