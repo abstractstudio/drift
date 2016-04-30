@@ -130,6 +130,9 @@ function Obstacle(canvas, obstacles, image) {
     /** Randomize the position and radius of the obstacle. */
     this.randomize = function () {
         this.r = Math.random()*10 + 10;
+        this.width = this.r*2;
+        this.height = this.r*2;
+        this.rotation = Math.random() * 2 * Math.PI;
         this.pos.x = Math.random() * (this.canvas.width-100) + 50;
         this.pos.y = -Math.random() * this.canvas.height;
         this.getCurrentAnimation().frameIndex = Math.floor(Math.random() * 4);
@@ -139,6 +142,31 @@ function Obstacle(canvas, obstacles, image) {
 
 /* Give all obstacles a rate. */
 Obstacle.prototype.rate = 1;
+
+/* Background image. */
+function Background(canvas) {
+    
+    this.canvas = canvas;
+    this.image;
+    this.rate = 1.6;
+    this.scroll = 0;
+    
+    this.update = function(delta) {
+        this.scroll += this.rate * delta / 16;
+        this.scroll = this.scroll % this.canvas.height;
+    }
+    
+    this.render = function(context) {
+        if (this.image == null) return;
+        
+        var h1 = this.canvas.height - this.scroll, h2 = this.scroll;
+        var w1 = w2 = this.canvas.width;
+        
+        context.drawImage(this.image, 0, 0, w1 / 6, h1 / 6, 0, this.scroll, w1, h1);
+        context.drawImage(this.image, 0, h1 / 6, w2 / 6, h2 / 6, 0, 0, w2, h2);
+    }
+    
+}
 
 /* HTML body. */
 var body;
@@ -152,6 +180,7 @@ function Drift(canvas) {
     /* Game objects. */
     this.sprites = {"boat": new Boat()};
     this.obstacles = [];
+    this.background;
     
     /* Game state and difficulty. */
     this.state = STATE.MENU;
@@ -170,7 +199,11 @@ function Drift(canvas) {
         
         /* Load images. */
         this.loadImages({"boat": "assets/boat3.png",
-                         "obstacles": "assets/obstacles.png"});
+                         "obstacles": "assets/obstacles.png",
+                         "water": "assets/water.png"});
+        
+        /* Background. */
+        this.background = new Background(this.canvas);
         
         /* Add custom event listeners. */
         var that = this;
@@ -204,12 +237,16 @@ function Drift(canvas) {
         
     }
     
+    /* Called when an image is loaded. */
+    this.loadedImage = function(name) {
+        if (name == "water") this.background.image = this.images.water;
+    }  
+    
     /** Render the game. */
     this.render = function(delta) {
         
         /* Clear. */
-        this.context.fillStyle = "white";
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.background.render(this.context);
         
         /* Draw frames per second. */
         if (this.showFPS) {
@@ -270,7 +307,7 @@ function Drift(canvas) {
     
     /** Update the game engine. */
     this.update = function(delta) {
-        
+                
         /* Check for pause. */
         if (keys[KEY.ESCAPE] === KEY.PRESSED && [STATE.PLAY, STATE.STOP].indexOf(this.state) != -1) {
             this.state = (this.state == STATE.PLAY ? STATE.STOP : STATE.PLAY);
@@ -281,6 +318,7 @@ function Drift(canvas) {
         if (this.state == STATE.STOP) delta = 0;
         Drift.prototype.update.call(this, delta);
         for (var i in this.obstacles) this.obstacles[i].update(delta);
+        this.background.update(delta);
         
         /* Obstacles. Needs canvas and other obstacles for respawn. */
         while (this.obstacles.length < 10 + this.difficulty) {
