@@ -27,7 +27,7 @@ function Boat() {
 	this.rv = 0.01;
     
     /* Bounds or rotation, position, and velocity. */
-    this.rb = [-Math.PI/2, Math.PI/2];
+    this.rb = [-Math.PI/3, Math.PI/3];
     this.xb = [50, 550];
     this.vb = [-1.5, 1.5];
     
@@ -109,6 +109,7 @@ function Obstacle(canvas, obstacles, image) {
     
     /** Update the obstacle. */
     this.update = function(delta) {
+		console.log(Obstacle.prototype.rate);
         this.pos.y += this.v * delta * Obstacle.prototype.rate;
         if (this.pos.y > this.canvas.height + 30 && delta != 0) this.respawn();
         this.getCurrentAnimation().update();
@@ -136,12 +137,10 @@ function Obstacle(canvas, obstacles, image) {
         this.pos.x = Math.random() * (this.canvas.width-100) + 50;
         this.pos.y = -Math.random() * this.canvas.height;
         this.getCurrentAnimation().frameIndex = Math.floor(Math.random() * 4);
+		console.log(this.pos.x + " " + this.pos.y);
     }
 
 }
-
-/* Give all obstacles a rate. */
-Obstacle.prototype.rate = 1;
 
 /* Background image. */
 function Background(canvas) {
@@ -317,7 +316,12 @@ function Drift(canvas) {
         /* Update sprites and obstacles. */
         if (this.state == STATE.STOP) delta = 0;
         Drift.prototype.update.call(this, delta);
-        for (var i in this.obstacles) this.obstacles[i].update(delta);
+        for (var i in this.obstacles) {
+			this.obstacles[i].update(delta);
+			
+			var distFromPlayer = distance(this.sprites["boat"], this.obstacles[i].pos);
+			
+		}
         this.background.update(delta);
         
         /* Obstacles. Needs canvas and other obstacles for respawn. */
@@ -327,10 +331,11 @@ function Drift(canvas) {
             this.obstacles.push(obstacle);
         }
     }
+	/* Set object prototypes for inheritance. */
+	Boat.prototype = new Sprite();
+	Drift.prototype = new Engine();
+	Obstacle.prototype = new Sprite();
 
+	/* Give all obstacles a rate. */
+	Obstacle.prototype.rate = 1;
 }
-
-/* Set object prototypes for inheritance. */
-Boat.prototype = new Sprite();
-Drift.prototype = new Engine();
-Obstacle.protoype = new Sprite();
