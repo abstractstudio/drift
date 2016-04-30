@@ -249,8 +249,8 @@ function Drift(canvas) {
         } else if (this.state == STATE.PLAY) {
             
             /* Render. */
-            for (var sprite in this.sprites) this.sprites[sprite].render(this.context);
             for (var i in this.obstacles) this.obstacles[i].render(this.context);
+            for (var sprite in this.sprites) this.sprites[sprite].render(this.context);
         
         /* If paused. */
         } else if (this.state == STATE.STOP) {
