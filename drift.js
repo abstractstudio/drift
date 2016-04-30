@@ -54,12 +54,12 @@ function Boat() {
         
         /* If left. */
 		if (left && !right) {
-            this.rotation = Math.min(this.rb[1], this.rotation+this.rv*delta/16*this.rate);
+            this.turn(delta)
             this.getCurrentAnimation().frameIndex = 0;
             
         /* If right. */
         } else if (right && !left) {
-            this.rotation = Math.max(this.rb[0], this.rotation-this.rv*delta/16*this.rate);
+            this.turn(-delta);
             this.getCurrentAnimation().frameIndex = 2;
             
         /* If neither or both. */
@@ -75,12 +75,18 @@ function Boat() {
         
         /* Update the boat as a sprite. */
         Boat.prototype.update.call(this, delta);
-	}
+	
+    }
+    
+    /** Turn the boat. */
+    this.turn = function(delta) {
+        this.rotation = bound(this.rotation + this.rv*delta/16*this.rate, this.rb);
+    }
 
 }
 
 /** Obstacle. */
-function Obstacle(canvas, obstacles) {
+function Obstacle(canvas, obstacles, image) {
     
     /* Super constructor. */
     Sprite.call(this);
@@ -91,18 +97,21 @@ function Obstacle(canvas, obstacles) {
     /* Canvas and other obstacle reference for respawn. */
     this.canvas = canvas;
     this.obstacles = obstacles;
+    this.spriteImage = image;
+    
+    /* Animations. */
+    this.currentAnimation = "obstacle";
+    this.addAnimation(new Animation("obstacle", [0, 1, 2, 3]));
+    this.width = 8*4;
+    this.height = 8*4;
+    this.numRows = 2;
+    this.numColumns = 2;
     
     /** Update the obstacle. */
     this.update = function(delta) {
         this.pos.y += this.v * delta * Obstacle.prototype.rate;
-        if (this.pos.y > this.canvas.height + 30) this.respawn();
-    }
-    
-    /** Render the obstacle. */
-    this.render = function(context) {
-        context.beginPath();
-        context.arc(this.pos.x, this.pos.y, this.r, 0, 2*Math.PI);
-        context.stroke();
+        if (this.pos.y > this.canvas.height + 30 && delta != 0) this.respawn();
+        this.getCurrentAnimation().update();
     }
     
     /** Respawn the obstacle. */
@@ -123,15 +132,16 @@ function Obstacle(canvas, obstacles) {
         this.r = Math.random()*10 + 10;
         this.pos.x = Math.random() * (this.canvas.width-100) + 50;
         this.pos.y = -Math.random() * this.canvas.height;
+        this.getCurrentAnimation().frameIndex = Math.floor(Math.random() * 4);
     }
-    
-    /* Respawn when created. */
-    this.respawn();
 
 }
 
 /* Give all obstacles a rate. */
 Obstacle.prototype.rate = 1;
+
+/* HTML body. */
+var body;
 
 /** The main game engine. */
 function Drift(canvas) {
@@ -150,23 +160,41 @@ function Drift(canvas) {
     /** Game setup. */
     this.setup = function() {
         
+        /* HTML body. */
+        body = document.getElementsByTagName("body")[0];
+        
         /* Setup the engine. */
         new Engine().setup.call(this);
         
+        this.state = STATE.MENU;
+        
         /* Load images. */
-        this.loadImages({"boat": "assets/boat3.png"});
+        this.loadImages({"boat": "assets/boat3.png",
+                         "obstacles": "assets/obstacles.png"});
         
         /* Add custom event listeners. */
         var that = this;
         document.addEventListener("mousedown", function(e) {
-           
+                       
+            /* Mouse position. */
+            var x = mouse.x - that.canvas.offsetLeft + body.scrollLeft;
+            var y = mouse.y - that.canvas.offsetTop + body.scrollTop;
+                        
             /* Update state. */
-            var x = mouse.x - that.canvas.offsetLeft;
-            var y = mouse.y - that.canvas.offsetTop;
-            var bbox = [200, 260, 200, 50];
-            if (x > bbox[0] && x < bbox[0] + bbox[2] && y > bbox[1] && y < bbox[1]+bbox[3]) {
-                that.state = STATE.PLAY;
-                console.log("Shifted to play state");
+            if (that.state == STATE.MENU) {
+                var bbox = [200, 260, 200, 50];
+                if (x > bbox[0] && x < bbox[0] + bbox[2] && y > bbox[1] && y < bbox[1]+bbox[3]) {
+                    that.state = STATE.PLAY;
+                    console.log("Shifted to play state");
+                }
+                
+            /* Touch controls. */
+            } else if (that.state == STATE.PLAY) {
+                /* if (x < that.canvas.width / 2) {
+                    that.sprites.boat.turn(16*6);
+                } else {
+                    that.sprites.boat.turn(-16*6);
+                } */
             }
                         
         });
@@ -196,8 +224,8 @@ function Drift(canvas) {
         if (this.state == STATE.MENU) {
             
             /* Grab the mouse. */
-            var x = mouse.x - this.canvas.offsetLeft;
-            var y = mouse.y - this.canvas.offsetTop;
+            var x = mouse.x - this.canvas.offsetLeft + body.scrollLeft;
+            var y = mouse.y - this.canvas.offsetTop + body.scrollTop;
             
             /* Title. */
             this.context.fillStyle = "black";
@@ -228,8 +256,8 @@ function Drift(canvas) {
         } else if (this.state == STATE.STOP) {
 
             /* Render. */
-            for (var sprite in this.sprites) this.sprites[sprite].render(this.context);
             for (var i in this.obstacles) this.obstacles[i].render(this.context);
+            for (var sprite in this.sprites) this.sprites[sprite].render(this.context);
 
             /*  Paused. */
             this.context.textAlign = "center";
@@ -255,8 +283,11 @@ function Drift(canvas) {
         for (var i in this.obstacles) this.obstacles[i].update(delta);
         
         /* Obstacles. Needs canvas and other obstacles for respawn. */
-        while (this.obstacles.length < 10 + this.difficulty) this.obstacles.push(new Obstacle(this.canvas, this.obstacles));
-        
+        while (this.obstacles.length < 10 + this.difficulty) {
+            var obstacle = new Obstacle(this.canvas, this.obstacles, this.images.obstacles);
+            obstacle.respawn();
+            this.obstacles.push(obstacle);
+        }
     }
 
 }
