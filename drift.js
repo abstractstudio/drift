@@ -6,36 +6,44 @@ function bound(x, b) { return Math.min(Math.max(x, b[0]), b[1]); }
 
 /** The boat sprite. */
 function Boat() {
-	
-	this.x = 300;
-	this.y = 550;
-    this.v = 0;
-    this.a = 0.05;
-
-    this.r = Math.PI / 2;
-	this.rv = 0.02;
     
-    this.rb = [0, Math.PI];
+    Sprite.call(this);
+    
+    this.rate = 1;
+	
+	this.pos.x = 300;
+	this.pos.y = 550;
+    this.v = 0;
+    this.a = 0.03;
+
+    this.rotation = 0;
+	this.rv = 0.01;
+    
+    this.rb = [-Math.PI/2, Math.PI/2];
     this.xb = [50, 550];
-    this.vb = [-2, 2];
+    this.vb = [-1.5, 1.5];
+    
+    this.width = 48;
+    this.height = 29*3;
+    this.numRows = 1;
+    this.numColumns = 3;
+    
+    this.rpos.x = this.width / 2;
+    this.rpos.y = this.height / 2;
+    
+    this.currentAnimation = "boat";
+    this.addAnimation(new Animation("boat", [0, 1, 2]));
 
 	this.update = function(delta) {
-		if (keys[KEY.LEFT] || keys[KEY.A]) this.r = Math.min(this.rb[1], this.r+this.rv*delta/16);
-        if (keys[KEY.RIGHT] || keys[KEY.D]) this.r = Math.max(this.rb[0], this.r-this.rv*delta/16);
-        this.v += Math.cos(this.r) * this.a;
+		if (keys[KEY.LEFT] || keys[KEY.A]) this.rotation = Math.min(this.rb[1], this.rotation+this.rv*delta/16*this.rate);
+        if (keys[KEY.RIGHT] || keys[KEY.D]) this.rotation = Math.max(this.rb[0], this.rotation-this.rv*delta/16*this.rate);
+        this.v += -Math.sin(this.rotation) * this.a;
         this.v = bound(this.v, this.vb);
-        this.x += this.v * delta/16;
-        this.x = bound(this.x, this.xb);
+        this.pos.x += this.v * delta/16 * this.rate;
+        this.pos.x = bound(this.pos.x, this.xb);
         
+        this.getCurrentAnimation().frameIndex = 1;
 	}
-
-	this.render = function(context) {
-        context.fillStyle = "black";
-		context.fillRect(this.x, this.y, 10, 10);
-        context.beginPath();
-        context.arc(this.x+5, this.y+5, 20, -this.r - 0.1, -this.r + 0.1);
-        context.stroke();
-    }
 
 }
 
@@ -51,6 +59,8 @@ function Drift(canvas) {
         
         new Engine().setup.call(this);
         
+        this.loadImages({"boat": "assets/boat2.png"});
+        
         var that = this;
         document.addEventListener("mousedown", function(e) {
            
@@ -62,8 +72,10 @@ function Drift(canvas) {
                 that.state = STATE.PLAY;
                 console.log("Shifted to play state");
             }
-            
+                        
         });
+        
+        this.context.imageSmoothingEnabled = false;
         
     }
     
@@ -122,8 +134,7 @@ function Drift(canvas) {
             this.context.fillText("Paused", 300, 300);
         
         }
-        
-        
+            
     }
     
     this.update = function(delta) {
