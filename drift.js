@@ -143,6 +143,7 @@ function Drift(canvas) {
             /* Render. */
             for (var sprite in this.sprites) this.sprites[sprite].render(this.context);
             this.context.textAlign = "center";
+            this.context.fillStyle = "black";
             this.context.fillText("Paused", 300, 300);
         
         }
