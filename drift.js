@@ -22,9 +22,9 @@ function Boat(engine) {
     /* Rotational bounds. */
     this.mov.rb = [-Math.PI/3, Math.PI/3];
     
-    /* Auto render. */
+    /* Auto. */
     this.autoupdate = true;
-    this.autorender = true;
+    this.autorender = false;
     
     /* Animation. */
     this.animation = "boat";
@@ -77,6 +77,76 @@ function Boat(engine) {
     
 }
 
+/** Generic obstacle. */
+function Obstacle(engine) {
+		
+	/* Super constructor. */
+	Sprite.call(this, engine);
+	
+	/* Movement. */
+	this.rate = 1;
+	this.rad = 0;
+	this.rot = 0;
+	this.mov = {yv: 2};
+	
+	/* Auto. */
+	this.autoupdate = true;
+	this.autorender = true;
+
+	/* Animation. */
+	this.animation = "obstacle";
+	this.addAnimation(new Animation("obstacle", [0, 1, 2, 3]));
+	
+	/** Update the obstacle. */
+	this.update = function(delta) {
+		if (this.engine.state != STATE.PLAY) return;
+		this.pos.y += this.mov.yv * Obstacle.rate * this.engine.rate;
+        if (this.pos.y > this.engine.canvas.height + this.rad && delta != 0) this.respawn();
+	}
+	
+	/** Respawn the obstacle. */
+	this.respawn = function() {
+		
+		/* Randomize the position and obstacle type. */
+		this.randomize();
+		
+        for (var i = 0; i < this.engine.difficulty; i++) {
+						
+			/* Get the obstacle. */
+			var obstacle = this.engine.entities["obstacle" + i];
+			if (!obstacle) continue;
+						
+			/* Skip if comparing to self. */
+            if (obstacle === this) continue;
+						
+            /* Fail and send to bottom if colliding with another or too close. */
+            if (Vector.distance(this.pos, obstacle.pos) < this.rad + obstacle.rad + this.engine.entities.boat.height*this.engine.rate) {
+                this.pos.y = this.engine.canvas.height + this.rad + 1;
+				break;
+            }
+			
+        }
+		
+	}
+	
+	/** Randomize the obstacle. */
+	this.randomize = function() {
+        this.rad = Math.random()*10 + 10;
+        this.width = this.height = this.rad*2;
+        this.rotation = Math.random() * 2 * Math.PI;
+        this.pos.x = Math.random() * (this.engine.canvas.width-100) + 50;
+        this.pos.y = -Math.random() * this.engine.canvas.height - this.rad;
+        this.getAnimation().index = Math.floor(Math.random() * 4);
+	}
+	
+	/* Randomize on initialization. */
+	this.respawn();
+
+}
+
+/* Static rate. */
+Obstacle.rate = 1;
+
 /** Scrolling background image. */
 function Background(engine) {
     
@@ -125,10 +195,11 @@ function Drift(canvas) {
     /* Game objects. */
     this.entities = {};
     this.playlist = [];
+	this.messages = [];
 
     /* State. */
     this.state = STATE.LOAD;
-    this.difficulty = 0;
+    this.difficulty = 10;
     
     /* Rate. */
     this.rate = 1;
@@ -149,6 +220,7 @@ function Drift(canvas) {
         /* Create entities. */
         this.entities.boat = new Boat(this);
         this.entities.background = new Background(this);
+		for (var i = 0; i < this.difficulty; i++) this.entities["obstacle" + i] = new Obstacle(this);
         
         /* Queue resources. */
         this.manager.queue("boat", RESOURCE.IMAGE, "assets/boat.png");
@@ -157,9 +229,11 @@ function Drift(canvas) {
         this.manager.load(function() {
             
             /* Alot resources. */
-            var sheet = new Sheet(that.manager.$("boat"), 1, 3);
-            that.entities.boat.setSheet(sheet);
+            var boatSheet = new Sheet(that.manager.$("boat"), 1, 3);
+			var obstacleSheet = new Sheet(that.manager.$("obstacles"), 2, 2);
+            that.entities.boat.setSheet(boatSheet);
             that.entities.background.image = that.manager.$("water");
+			for (var i = 0; i < that.difficulty; i++) that.entities["obstacle" + i].setSheet(obstacleSheet);
             console.log("Loaded resources.")
             
             /* Set up menu. */
@@ -171,10 +245,6 @@ function Drift(canvas) {
         document.addEventListener("mousedown", function(e) {
             var x = that.mouse.x - that.canvas.offsetLeft + document.body.scrollLeft;
             var y = that.mouse.y - that.canvas.offsetTop + document.body.scrollTop;
-            
-            /* Start code. */
-            if (that.state == STATE.MENU) that.play();
-            else if (that.state == STATE.PLAY) that.target += 0.5;
         });
         
         /* Mess around with the context. */
@@ -219,11 +289,25 @@ function Drift(canvas) {
 		superclass.display.call(this);
 		this.context.textAlign = "right";
 		this.context.fillText(Math.floor(this.score), this.canvas.width-10, 10);
+		this.context.textAlign = "center";
+		for (var i = 0; i < this.messages.length; i++) 
+		this.context.fillText(this.messages[i], this.canvas.width/2, this.canvas.height/3+20*i);
+	}
+	
+	/** Leave a text message hanging on screen for a set amount of time. */
+	this.message = function(text, time) {
+		var that = this;
+		var obj = new String(text);
+		this.messages.push(obj);
+		setTimeout(function() { that.messages.splice(that.messages.indexOf(obj), 1); }, time);
 	}
     
     /** Update the engine. */
     this.update = function(delta) {
-                
+         
+		/* Check start. */
+		if (this.keyboard[KEY.SPACE] == KEY.PRESSED && this.state == STATE.MENU) this.play();	
+	
         /* Check pause. */
         if (this.keyboard[KEY.ESCAPE] == KEY.PRESSED) {
             if (this.state == STATE.PLAY) this.state = STATE.STOP;
@@ -253,6 +337,8 @@ function Drift(canvas) {
 			this.context.textBaseline = "bottom";
 			this.context.font = "28px Bit";
 			this.context.fillText("Chincoteague Drift", canvas.width/2, canvas.height/3);
+			this.context.font = "20px Bit";
+			this.context.fillText("Press space to start", canvas.width/2, canvas.height/3+24);
             
 		/* If playing. */
         } else if (this.state == STATE.PLAY) {
@@ -280,6 +366,7 @@ function Drift(canvas) {
 
 		/* Autodraw the entities. */
 		for (var name in this.entities) if (this.entities[name].autorender) this.entities[name].render(this.context);
+		this.entities.boat.render(this.context);
 		
 		/* Display. */
 		if (this.showDisplay) this.display();
