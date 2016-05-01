@@ -74,7 +74,6 @@ function Boat(engine) {
         var mov = this.mov.xv * this.rate * this.engine.rate * delta/16;
         this.pos.x = bound(this.pos.x+mov, this.mov.xb);
     }
-    
 }
 
 /** Generic obstacle. */
@@ -202,8 +201,8 @@ function Drift(canvas) {
     this.difficulty = 10;
     
     /* Rate. */
-    this.rate = 1;
-    this.target = 1;
+    this.rate = 100;
+    this.target = 1000;
 	
 	/* Score. */
 	this.score = 0;
@@ -318,11 +317,76 @@ function Drift(canvas) {
 		/* Increase score. */
 		if (this.state == STATE.PLAY) this.score += this.rate * delta/16 * 0.1;
 		
+		/* Check for collisions. */
+		for (var i = 0; i < this.difficulty; i++) {
+			var obstacle = this.entities["obstacle" + i];
+			/*var distance = Vector.distance(this.entities.boat.pos, obstacle.pos);
+			if (distance <= obstacle.rad + Math.min(this.entities.boat.width, this.entities.boat.height)/2) {
+				this.dead();
+			}*/
+			if (this.collideCircleWithRotatedRectangle(obstacle, this.entities.boat)) {
+				this.dead();
+			}
+			
+		}
+		
         /* Update the superclass. */
         superclass.update.call(this, delta);
         
     }
-    
+	
+	this.collideCircleWithRotatedRectangle = function(obstacle, boat) {
+		var rectCenterX = boat.pos.x;
+		var rectCenterY = boat.pos.y;
+
+		var rectX = rectCenterX - boat.width / 2;
+		var rectY = rectCenterY - boat.height / 2;
+
+		var rectReferenceX = rectX;
+		var rectReferenceY = rectY;
+		
+		var circleCenterX = obstacle.pos.x + obstacle.rad;
+		var circleCenterY = obstacle.pos.y + obstacle.rad;
+		
+		// Rotate circle's center point back
+		var unrotatedCircleX = Math.cos( boat.rot ) * ( circleCenterX - rectCenterX ) - Math.sin( boat.rot ) * ( circleCenterY - rectCenterY ) + rectCenterX;
+		var unrotatedCircleY = Math.sin( boat.rot ) * ( circleCenterX - rectCenterX ) + Math.cos( boat.rot ) * ( circleCenterY - rectCenterY ) + rectCenterY;
+
+		// Closest point in the rectangle to the center of circle rotated backwards(unrotated)
+		var closestX, closestY;
+
+		// Find the unrotated closest x point from center of unrotated circle
+		if ( unrotatedCircleX < rectReferenceX ) {
+			closestX = rectReferenceX;
+		} else if ( unrotatedCircleX > rectReferenceX + boat.width ) {
+			closestX = rectReferenceX + boat.width;
+		} else {
+			closestX = unrotatedCircleX;
+		}
+	 
+		// Find the unrotated closest y point from center of unrotated circle
+		if ( unrotatedCircleY < rectReferenceY ) {
+			closestY = rectReferenceY;
+		} else if ( unrotatedCircleY > rectReferenceY + boat.height ) {
+			closestY = rectReferenceY + boat.height;
+		} else {
+			closestY = unrotatedCircleY;
+		}
+	 
+		// Determine collision
+		var collision = false;
+		var distance = Math.sqrt((closestX - unrotatedCircleX)*(closestX - unrotatedCircleX) + (closestY - unrotatedCircleY)*(closestY - unrotatedCircleY));
+		
+		if ( distance < obstacle.rad ) {
+			collision = true;
+		}
+		else {
+			collision = false;
+		}
+
+		return collision;
+	}
+
     /** Render the entire engine. */
     this.render = function(delta) {
 		
@@ -370,7 +434,6 @@ function Drift(canvas) {
 		
 		/* Display. */
 		if (this.showDisplay) this.display();
-		
-    }
+	}
     
 }
