@@ -215,6 +215,7 @@ function Drift(canvas) {
 	/** Display. */
 	this.display = function() {
 		this.context.font = "16px Bit";
+		this.context.textBaseline = "hanging";
 		superclass.display.call(this);
 		this.context.textAlign = "right";
 		this.context.fillText(Math.floor(this.score), this.canvas.width-10, 10);
@@ -231,7 +232,7 @@ function Drift(canvas) {
         }
 		
 		/* Increase score. */
-		if (this.state == STATE.PLAY) this.score += this.rate * delta/16 * 0.25;
+		if (this.state == STATE.PLAY) this.score += this.rate * delta/16 * 0.1;
 		
         /* Update the superclass. */
         superclass.update.call(this, delta);

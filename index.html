@@ -9,11 +9,12 @@
         </style>
         <script type="text/javascript">
             var ENGINE = "abstractengine/";
+			var engine;
             function start() {
                 require(["drift.js"], function() {
                     console.log("Loaded Drift");
                     var canvas = document.getElementById("canvas"); 
-                    var engine = new Drift(canvas);
+                    engine = new Drift(canvas);
                     engine.start();
                 });
             }
