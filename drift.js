@@ -133,6 +133,9 @@ function Drift(canvas) {
     /* Rate. */
     this.rate = 1;
     this.target = 1;
+	
+	/* Score. */
+	this.score = 0;
     
     /** Setup the engine. */
     this.setup = function() {
@@ -178,7 +181,7 @@ function Drift(canvas) {
         this.context.imageSmoothingEnabled = false;
 		
 		/* Static context stuff. */
-		this.context.font = "16px Bit";
+		this.context.fontFamily = "Bit";
         
     }
     
@@ -208,6 +211,14 @@ function Drift(canvas) {
         this.state = STATE.DEAD;
         this.target = 0;
     }
+	
+	/** Display. */
+	this.display = function() {
+		this.context.font = "16px Bit";
+		superclass.display.call(this);
+		this.context.textAlign = "right";
+		this.context.fillText(Math.floor(this.score), this.canvas.width-10, 10);
+	}
     
     /** Update the engine. */
     this.update = function(delta) {
@@ -218,23 +229,31 @@ function Drift(canvas) {
             else if (this.state == STATE.STOP) this.state = STATE.PLAY;
             console.log("Changed to state " + this.state);
         }
-        
-        /** Update the superclass. */
+		
+		/* Increase score. */
+		if (this.state == STATE.PLAY) this.score += this.rate * delta/16 * 0.25;
+		
+        /* Update the superclass. */
         superclass.update.call(this, delta);
         
     }
     
     /** Render the entire engine. */
     this.render = function(delta) {
-        
+		
+		/* Do before drawing entities. */
         if (this.state == STATE.MENU) {
             
             /* Clear by drawing the background. */
             this.entities.background.render(this.context);
-            superclass.render.call(this, delta, false);
-            
+			
             /* Draw the title and buttons. */
+			this.context.textAlign = "center";
+			this.context.textBaseline = "bottom";
+			this.context.font = "28px Bit";
+			this.context.fillText("Chincoteague Drift", canvas.width/2, canvas.height/3);
             
+		/* If playing. */
         } else if (this.state == STATE.PLAY) {
             
             /* Move rate to target. */
@@ -243,16 +262,27 @@ function Drift(canvas) {
 
             /* Clear by drawing the background and render. */
             this.entities.background.render(this.context);
-            superclass.render.call(this, delta, false);
-        
+			
+		/* If paused. */
         } else if (this.state == STATE.STOP) {
             
             /* Clear by drawing the background and render. */
             this.entities.background.render(this.context);
-            superclass.render.call(this, delta, false);
-            
+			
+            /* Draw the title and buttons. */
+			this.context.textAlign = "center";
+			this.context.textBaseline = "bottom";
+			this.context.font = "28px Bit";
+			this.context.fillText("Paused", canvas.width/2, canvas.height/3);
+			
         }
-        
+
+		/* Autodraw the entities. */
+		for (var name in this.entities) if (this.entities[name].autorender) this.entities[name].render(this.context);
+		
+		/* Display. */
+		if (this.showDisplay) this.display();
+		
     }
     
 }
