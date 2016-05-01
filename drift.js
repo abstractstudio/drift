@@ -119,6 +119,9 @@ function Drift(canvas) {
     Engine.call(this, canvas);
     var superclass = new Engine();
     
+    /* Random data. */
+    this.cache = {};
+    
     /* Game objects. */
     this.entities = {};
     this.playlist = [];
@@ -157,9 +160,7 @@ function Drift(canvas) {
             console.log("Loaded resources.")
             
             /* Set up menu. */
-            that.state = STATE.MENU;
-            that.rate = 0;
-            that.target = 0;
+            that.menu();
             
         });
         
@@ -169,13 +170,40 @@ function Drift(canvas) {
             var y = that.mouse.y - that.canvas.offsetTop + document.body.scrollTop;
             
             /* Start code. */
-            that.state = STATE.PLAY;
-            that.target = 1;
+            if (that.state == STATE.MENU) that.play();
+            else if (that.state == STATE.PLAY) that.target += 0.5;
         });
         
         /* Mess around with the context. */
         this.context.imageSmoothingEnabled = false;
         
+    }
+    
+    /** Go to the menu. */
+    this.menu = function() {
+        this.state = STATE.MENU;
+        this.rate = 0;
+        this.target = 0;
+    }
+    
+    /** Play the game. */
+    this.play = function() {
+        this.state = STATE.PLAY;
+        this.rate = this.cache.rate || 0;
+        this.target = this.cache.target || 1;
+    }
+    
+    /** Pause the engine. */
+    this.stop = function() {
+        this.state = STATE.STOP;
+        this.cache.rate = this.rate;
+        this.cache.target = this.target;
+    }
+    
+    /** Once a round is over. */
+    this.dead = function() {
+        this.state = STATE.DEAD;
+        this.target = 0;
     }
     
     /** Update the engine. */
@@ -203,7 +231,7 @@ function Drift(canvas) {
             superclass.render.call(this, delta, false);
             
         } else if (this.state == STATE.PLAY) {
-        
+            
             /* Move rate to target. */
             if (this.rate > this.target) this.rate = Math.max(this.target, this.rate-delta/16*0.05);
             else if (this.rate < this.target) this.rate = Math.min(this.target, this.rate+delta/16*0.05);
