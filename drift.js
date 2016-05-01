@@ -176,6 +176,9 @@ function Drift(canvas) {
         
         /* Mess around with the context. */
         this.context.imageSmoothingEnabled = false;
+		
+		/* Static context stuff. */
+		this.context.font = "16px Bit";
         
     }
     
@@ -229,6 +232,8 @@ function Drift(canvas) {
             /* Clear by drawing the background. */
             this.entities.background.render(this.context);
             superclass.render.call(this, delta, false);
+            
+            /* Draw the title and buttons. */
             
         } else if (this.state == STATE.PLAY) {
             

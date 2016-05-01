@@ -12,16 +12,16 @@ function Boat() {
     
     /* Movement rate. */
     this.rate = 1;
-	
+    
     /* Position, velocity, and acceleration. */
-	this.pos.x = 300;
-	this.pos.y = 550;
+    this.pos.x = 300;
+    this.pos.y = 550;
     this.v = 0;
     this.a = 0.03;
 
     /* Rotation and rotational velocity. */
     this.rotation = 0;
-	this.rv = 0.01;
+    this.rv = 0.01;
     
     /* Bounds or rotation, position, and velocity. */
     this.rb = [-Math.PI/3, Math.PI/3];
@@ -43,14 +43,14 @@ function Boat() {
     this.addAnimation(new Animation("boat", [0, 1, 2]));
 
     /* Update the boat. */
-	this.update = function(delta) {
+    this.update = function(delta) {
         
         /* Left and right input. */
         var left = keys[KEY.LEFT] || keys[KEY.A];
         var right = keys[KEY.RIGHT] || keys[KEY.D];
         
         /* If left. */
-		if (left && !right) {
+        if (left && !right) {
             this.turn(delta)
             this.getCurrentAnimation().frameIndex = 0;
             
@@ -72,7 +72,7 @@ function Boat() {
         
         /* Update the boat as a sprite. */
         Boat.prototype.update.call(this, delta);
-	
+    
     }
     
     /** Turn the boat. */
@@ -106,7 +106,7 @@ function Obstacle(canvas, obstacles, image) {
     
     /** Update the obstacle. */
     this.update = function(delta) {
-		console.log(Obstacle.prototype.rate);
+        console.log(Obstacle.prototype.rate);
         this.pos.y += this.v * delta * Obstacle.prototype.rate;
         if (this.pos.y > this.canvas.height + 30 && delta != 0) this.respawn();
         this.getCurrentAnimation().update();
@@ -134,7 +134,7 @@ function Obstacle(canvas, obstacles, image) {
         this.pos.x = Math.random() * (this.canvas.width-100) + 50;
         this.pos.y = -Math.random() * this.canvas.height;
         this.getCurrentAnimation().frameIndex = Math.floor(Math.random() * 4);
-		console.log(this.pos.x + " " + this.pos.y);
+        console.log(this.pos.x + " " + this.pos.y);
     }
 
 }
@@ -169,10 +169,10 @@ var body;
 
 /** The main game engine. */
 function Drift(canvas) {
-	
+    
     /* Super constructor. */
-	Engine.call(this, canvas);
-	
+    Engine.call(this, canvas);
+    
     /* Game objects. */
     this.sprites = {"boat": new Boat()};
     this.obstacles = [];
@@ -314,11 +314,11 @@ function Drift(canvas) {
         if (this.state == STATE.STOP) delta = 0;
         Drift.prototype.update.call(this, delta);
         for (var i in this.obstacles) {
-			this.obstacles[i].update(delta);
-			
-			var distFromPlayer = distance(this.sprites["boat"], this.obstacles[i].pos);
-			
-		}
+            this.obstacles[i].update(delta);
+            
+            var distFromPlayer = distance(this.sprites["boat"], this.obstacles[i].pos);
+            
+        }
         this.background.update(delta);
         
         /* Obstacles. Needs canvas and other obstacles for respawn. */
@@ -328,11 +328,11 @@ function Drift(canvas) {
             this.obstacles.push(obstacle);
         }
     }
-	/* Set object prototypes for inheritance. */
-	Boat.prototype = new Sprite();
-	Drift.prototype = new Engine();
-	Obstacle.prototype = new Sprite();
+    /* Set object prototypes for inheritance. */
+    Boat.prototype = new Sprite();
+    Drift.prototype = new Engine();
+    Obstacle.prototype = new Sprite();
 
-	/* Give all obstacles a rate. */
-	Obstacle.prototype.rate = 1;
+    /* Give all obstacles a rate. */
+    Obstacle.prototype.rate = 1;
 }
