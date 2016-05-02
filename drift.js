@@ -21,6 +21,11 @@ function Boat(engine) {
     
     /* Rotational bounds. */
     this.mov.rb = [-Math.PI/3, Math.PI/3];
+
+    /* Boost. */
+    this.temp = {};
+    this.temp.boost = 1;
+
     
     /* Auto. */
     this.autoupdate = true;
@@ -67,6 +72,8 @@ function Boat(engine) {
             this.move(delta);
         
         }
+
+        this.temp = {};
         
     }
     
@@ -79,7 +86,7 @@ function Boat(engine) {
     /** Move the boat. */
     this.move = function(delta) {
         this.mov.xv = bound(this.mov.xv-Math.sin(this.rot)*this.mov.xa, this.mov.vb);
-        var mov = this.mov.xv * this.rate * this.engine.rate * delta/16;
+        var mov = this.mov.xv * this.rate * this.engine.rate * delta/16 /* * (this.temp.boost || 1)*/;
         this.pos.x = bound(this.pos.x+mov, this.mov.xb);
     }
 	
@@ -207,12 +214,12 @@ function Drift(canvas) {
     /* Random data. */
     this.cache = {};
     this.cache["lastSkillBonus"] = 0;
-    this.cache["skillBonusCount"] = 0;
-    
+    this.cache["skillBonusCount"] = 0;    
+
     /* Game objects. */
     this.entities = {};
     this.playlist = [];
-	this.messages = [];
+    this.messages = [];
 
     /* State. */
     this.state = STATE.LOAD;
@@ -222,9 +229,9 @@ function Drift(canvas) {
     this.rate = 100;
     this.target = 1000;
 	
-	/* Score. */
-	this.score = 0;
-    
+    /* Score. */
+    this.score = 0;
+
     /** Setup the engine. */
     this.setup = function() {
         
@@ -237,7 +244,7 @@ function Drift(canvas) {
         /* Create entities. */
         this.entities.boat = new Boat(this);
         this.entities.background = new Background(this);
-		for (var i = 0; i < this.difficulty; i++) this.entities["obstacle" + i] = new Obstacle(this);
+        for (var i = 0; i < this.difficulty; i++) this.entities["obstacle" + i] = new Obstacle(this);
         
         /* Queue resources. */
         this.manager.queue("boat", RESOURCE.IMAGE, "assets/boat.png");
@@ -247,10 +254,10 @@ function Drift(canvas) {
             
             /* Alot resources. */
             var boatSheet = new Sheet(that.manager.$("boat"), 1, 3);
-			var obstacleSheet = new Sheet(that.manager.$("obstacles"), 2, 3);
+            var obstacleSheet = new Sheet(that.manager.$("obstacles"), 2, 3);
             that.entities.boat.setSheet(boatSheet);
             that.entities.background.image = that.manager.$("water");
-			for (var i = 0; i < that.difficulty; i++) that.entities["obstacle" + i].setSheet(obstacleSheet);
+            for (var i = 0; i < that.difficulty; i++) that.entities["obstacle" + i].setSheet(obstacleSheet);
             console.log("Loaded resources.")
             
             /* Set up menu. */
@@ -332,10 +339,15 @@ function Drift(canvas) {
     /** Update the engine. */
     this.update = function(delta) {
          
-		/* Check start. */
-		if (this.keyboard[KEY.SPACE] == KEY.PRESSED) {
+        /* Check start. */
+        if (this.keyboard[KEY.SPACE] == KEY.PRESSED) {
             if (this.state == STATE.MENU) this.play();
             else if (this.state == STATE.DEAD) this.replay();
+        }
+
+        /* Boost. */
+        if (this.keyboard[KEY.SPACE]) {
+            if (this.state == STATE.PLAY) this.entities.boat.temp.boost = 5;
         }
             
         /* Check pause. */
