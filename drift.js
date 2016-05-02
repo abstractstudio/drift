@@ -25,7 +25,6 @@ function Boat(engine) {
     /* Boost. */
     this.temp = {};
     this.temp.boost = 1;
-
     
     /* Auto. */
     this.autoupdate = true;
@@ -432,6 +431,10 @@ function Drift(canvas) {
                 this.score += 10;
                 this.message("SKILL BONUS +10", 1000);
                 this.cache["skillBonusCount"] += 1;
+                if (this.cache["skillBonusCount"] % 5 == 0) {
+                    this.score += 50;
+                    this.message("SUPER SKILL BONUS +50", 1500);
+                }
             }
         }
         
