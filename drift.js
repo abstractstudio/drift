@@ -145,7 +145,7 @@ function Obstacle(engine) {
         this.rot = Math.random() * 2 * Math.PI;
         this.pos.x = Math.random() * (this.engine.canvas.width-100) + 50;
         this.pos.y = -Math.random() * this.engine.canvas.height - this.rad;
-        this.getAnimation().index = Math.floor(Math.random() * 6);
+        this.getAnimation().index = Math.floor(Math.random() * 5);
 	}
 	
 	/* Randomize on initialization. */
