@@ -31,6 +31,14 @@ function Boat(engine) {
     this.addAnimation(new Animation("boat", [0, 1, 2]));
     this.getAnimation().index = 1;
     
+    /* Reset the boat to it's original position. */
+    this.reset = function() {
+        this.rot = 0;
+        this.pos.x = 300;
+        this.pos.y = 550;
+        this.mov.xv = 0;
+    }
+    
     /** Update the boat. */
     this.update = function(delta) {
         
@@ -131,11 +139,13 @@ function Obstacle(engine) {
 	/** Randomize the obstacle. */
 	this.randomize = function() {
         this.rad = Math.random()*10 + 10;
+        this.cpos.x = this.rad;
+        this.cpos.y = this.rad;
         this.width = this.height = this.rad*2;
-        this.rotation = Math.random() * 2 * Math.PI;
+        this.rot = Math.random() * 2 * Math.PI;
         this.pos.x = Math.random() * (this.engine.canvas.width-100) + 50;
         this.pos.y = -Math.random() * this.engine.canvas.height - this.rad;
-        this.getAnimation().index = Math.floor(Math.random() * 4);
+        this.getAnimation().index = Math.floor(Math.random() * 6);
 	}
 	
 	/* Randomize on initialization. */
@@ -190,6 +200,7 @@ function Drift(canvas) {
     
     /* Random data. */
     this.cache = {};
+    this.cache["lastSkillBonus"] = 0;
     
     /* Game objects. */
     this.entities = {};
@@ -223,13 +234,13 @@ function Drift(canvas) {
         
         /* Queue resources. */
         this.manager.queue("boat", RESOURCE.IMAGE, "assets/boat.png");
-        this.manager.queue("obstacles", RESOURCE.IMAGE, "assets/obstacles.png");
+        this.manager.queue("obstacles", RESOURCE.IMAGE, "assets/obstacles2.png");
         this.manager.queue("water", RESOURCE.IMAGE, "assets/water.png");
         this.manager.load(function() {
             
             /* Alot resources. */
             var boatSheet = new Sheet(that.manager.$("boat"), 1, 3);
-			var obstacleSheet = new Sheet(that.manager.$("obstacles"), 2, 2);
+			var obstacleSheet = new Sheet(that.manager.$("obstacles"), 2, 3);
             that.entities.boat.setSheet(boatSheet);
             that.entities.background.image = that.manager.$("water");
 			for (var i = 0; i < that.difficulty; i++) that.entities["obstacle" + i].setSheet(obstacleSheet);
@@ -268,6 +279,15 @@ function Drift(canvas) {
         this.target = this.cache.target || 1;
     }
     
+    /** Replay. */
+    this.replay = function() {
+        this.entities.boat.reset();
+        for (var i = 0; i < this.difficulty; i++) this.entities["obstacle"+i].respawn();
+        this.state = STATE.PLAY;
+        this.target = 1;
+        this.score = 0;
+    }
+    
     /** Pause the engine. */
     this.stop = function() {
         this.state = STATE.STOP;
@@ -290,7 +310,7 @@ function Drift(canvas) {
 		this.context.fillText(Math.floor(this.score), this.canvas.width-10, 10);
 		this.context.textAlign = "center";
 		for (var i = 0; i < this.messages.length; i++) 
-		this.context.fillText(this.messages[i], this.canvas.width/2, this.canvas.height/3+20*i);
+		this.context.fillText(this.messages[i], this.canvas.width/2, this.canvas.height/2+20*i);
 	}
 	
 	/** Leave a text message hanging on screen for a set amount of time. */
@@ -305,8 +325,11 @@ function Drift(canvas) {
     this.update = function(delta) {
          
 		/* Check start. */
-		if (this.keyboard[KEY.SPACE] == KEY.PRESSED && this.state == STATE.MENU) this.play();	
-	
+		if (this.keyboard[KEY.SPACE] == KEY.PRESSED) {
+            if (this.state == STATE.MENU) this.play();
+            else if (this.state == STATE.DEAD) this.replay();
+        }
+            
         /* Check pause. */
         if (this.keyboard[KEY.ESCAPE] == KEY.PRESSED) {
             if (this.state == STATE.PLAY) this.state = STATE.STOP;
@@ -318,84 +341,83 @@ function Drift(canvas) {
 		if (this.state == STATE.PLAY) this.score += this.rate * delta/16 * 0.1;
 		
 		/* Check for collisions. */
-		for (var i = 0; i < this.difficulty; i++) {
-			var obstacle = this.entities["obstacle" + i];
-			/*var distance = Vector.distance(this.entities.boat.pos, obstacle.pos);
-			if (distance <= obstacle.rad + Math.min(this.entities.boat.width, this.entities.boat.height)/2) {
-				this.dead();
-			}*/
-			if (this.collideCircleWithRotatedRectangle(obstacle, this.entities.boat)) {
-				this.dead();
-			}
-			
-		}
+        if (this.state == STATE.PLAY) {
+            for (var i = 0; i < this.difficulty; i++) {
+                var obstacle = this.entities["obstacle" + i];
+                if (this.colliding(obstacle, this.entities.boat)) this.dead();
+            }
+        }
 		
         /* Update the superclass. */
         superclass.update.call(this, delta);
         
     }
 	
-	this.collideCircleWithRotatedRectangle = function(obstacle, boat) {
-		var rectCenterX = boat.pos.x;
-		var rectCenterY = boat.pos.y;
+    /* Check if a boat and an obstacle are colliding. */
+	this.colliding = function(obstacle, boat) {
+        
+        /* Get boat center position. */
+		var bcx = boat.pos.x;
+		var bcy = boat.pos.y;
 
-		var rectX = rectCenterX - boat.width / 2;
-		var rectY = rectCenterY - boat.height / 2;
-
-		var rectReferenceX = rectX;
-		var rectReferenceY = rectY;
+        /* Get top left and copy. */
+		var bx = bcx - boat.width / 2;
+		var by = bcy - boat.height / 2;
+		var brx = bx;
+		var bry = by;
 		
-		var circleCenterX = obstacle.pos.x + obstacle.rad;
-		var circleCenterY = obstacle.pos.y + obstacle.rad;
+        /* Get obstacle top left. */
+		var ocx = obstacle.pos.x;
+		var ocy = obstacle.pos.y;
 		
-		// Rotate circle's center point back
-		var unrotatedCircleX = Math.cos( boat.rot ) * ( circleCenterX - rectCenterX ) - Math.sin( boat.rot ) * ( circleCenterY - rectCenterY ) + rectCenterX;
-		var unrotatedCircleY = Math.sin( boat.rot ) * ( circleCenterX - rectCenterX ) + Math.cos( boat.rot ) * ( circleCenterY - rectCenterY ) + rectCenterY;
+		/* Rotate circle's center point back. */
+		var cux = Math.cos(boat.rot) * (ocx-bcx) - Math.sin(boat.rot) * (ocy-bcy) + bcx;
+		var cuy = Math.sin(boat.rot) * (ocx-bcx) + Math.cos(boat.rot) * (ocy-bcy) + bcy;
 
-		// Closest point in the rectangle to the center of circle rotated backwards(unrotated)
-		var closestX, closestY;
+		/* Closest point in the rectangle to the center of circle rotated backwards (unrotated). */
+		var cx, cy;
 
-		// Find the unrotated closest x point from center of unrotated circle
-		if ( unrotatedCircleX < rectReferenceX ) {
-			closestX = rectReferenceX;
-		} else if ( unrotatedCircleX > rectReferenceX + boat.width ) {
-			closestX = rectReferenceX + boat.width;
-		} else {
-			closestX = unrotatedCircleX;
-		}
+		/* Find the unrotated closest x point from center of unrotated circle. */
+		if (cux < brx) cx = brx;
+		else if (cux > brx + boat.width) cx = brx + boat.width;
+		else cx = cux;
 	 
-		// Find the unrotated closest y point from center of unrotated circle
-		if ( unrotatedCircleY < rectReferenceY ) {
-			closestY = rectReferenceY;
-		} else if ( unrotatedCircleY > rectReferenceY + boat.height ) {
-			closestY = rectReferenceY + boat.height;
-		} else {
-			closestY = unrotatedCircleY;
-		}
+		/* Find the unrotated closest y point from center of unrotated circle. */
+		if (cuy < bry) cy = bry;
+		else if (cuy > bry + boat.height) cy = bry + boat.height;
+		else cy = cuy;
 	 
-		// Determine collision
-		var collision = false;
-		var distance = Math.sqrt((closestX - unrotatedCircleX)*(closestX - unrotatedCircleX) + (closestY - unrotatedCircleY)*(closestY - unrotatedCircleY));
-		
-		if ( distance < obstacle.rad ) {
-			collision = true;
-		}
-		else {
-			collision = false;
-		}
-
-		return collision;
+		/* Determine collision. */
+		var distance = Math.sqrt((cx-cux)*(cx-cux)+(cy-cuy)*(cy-cuy));
+        
+        /* Piggy back and check skill bonus. */
+        if (Date.now() - this.cache["lastSkillBonus"] > 1500) {
+            if (distance - obstacle.rad < 10) {
+                this.cache["lastSkillBonus"] = Date.now();
+                this.score += 10;
+                this.message("Skill bonus", 1000);
+            }
+        }
+        
+        /* Return. */
+		if (distance < obstacle.rad) return true;
+		return false;
+        
 	}
 
     /** Render the entire engine. */
     this.render = function(delta) {
 		
+        /* Clear the canvas by rendering the background. */
+        this.entities.background.render(this.context);
+
+        /* Autodraw the entities. */
+		for (var name in this.entities) if (this.entities[name].autorender) this.entities[name].render(this.context);
+		this.entities.boat.render(this.context);
+        
 		/* Do before drawing entities. */
         if (this.state == STATE.MENU) {
-            
-            /* Clear by drawing the background. */
-            this.entities.background.render(this.context);
-			
+
             /* Draw the title and buttons. */
 			this.context.textAlign = "center";
 			this.context.textBaseline = "bottom";
@@ -410,27 +432,27 @@ function Drift(canvas) {
             /* Move rate to target. */
             if (this.rate > this.target) this.rate = Math.max(this.target, this.rate-delta/16*0.05);
             else if (this.rate < this.target) this.rate = Math.min(this.target, this.rate+delta/16*0.05);
-
-            /* Clear by drawing the background and render. */
-            this.entities.background.render(this.context);
 			
 		/* If paused. */
         } else if (this.state == STATE.STOP) {
-            
-            /* Clear by drawing the background and render. */
-            this.entities.background.render(this.context);
 			
             /* Draw the title and buttons. */
 			this.context.textAlign = "center";
 			this.context.textBaseline = "bottom";
 			this.context.font = "28px Bit";
 			this.context.fillText("Paused", canvas.width/2, canvas.height/3);
-			
-        }
 
-		/* Autodraw the entities. */
-		for (var name in this.entities) if (this.entities[name].autorender) this.entities[name].render(this.context);
-		this.entities.boat.render(this.context);
+        /* If dead. */
+        } else if (this.state == STATE.DEAD) {
+            
+            this.context.textAlign = "center";
+            this.context.textBaseline = "bottom";
+            this.context.font = "28px Bit";
+            this.context.fillText("Game over", canvas.width/2, canvas.height/3);
+            this.context.font = "20px Bit";
+            this.context.fillText("Score " + Math.floor(this.score), canvas.width/2, canvas.height/3+30);
+            
+        }
 		
 		/* Display. */
 		if (this.showDisplay) this.display();
