@@ -8,7 +8,7 @@ function bound(x, b) { return Math.min(Math.max(x, b[0]), b[1]); }
 function Boat(engine) {
     
     /* Super constructor. */
-    Sprite.call(this, engine, 300, 550, 16*3, 29*3);
+    Sprite.call(this, engine, 300, 550, 16*3, 29*3, 8*3, 10*3);
     
     /* Movement rate. */
     this.rate = 1;
@@ -21,6 +21,10 @@ function Boat(engine) {
     
     /* Rotational bounds. */
     this.mov.rb = [-Math.PI/3, Math.PI/3];
+
+    /* Boost. */
+    this.temp = {};
+    this.temp.boost = 1;
     
     /* Auto. */
     this.autoupdate = true;
@@ -67,6 +71,8 @@ function Boat(engine) {
             this.move(delta);
         
         }
+
+        this.temp = {};
         
     }
     
@@ -79,9 +85,15 @@ function Boat(engine) {
     /** Move the boat. */
     this.move = function(delta) {
         this.mov.xv = bound(this.mov.xv-Math.sin(this.rot)*this.mov.xa, this.mov.vb);
+        this.mov.xv -= Math.sin(this.rot) * (this.temp.boost || 0);
         var mov = this.mov.xv * this.rate * this.engine.rate * delta/16;
         this.pos.x = bound(this.pos.x+mov, this.mov.xb);
     }
+	
+	this.bbox = function() {
+		var tl = this.topLeft();
+		return [tl.x, tl.y, this.width, this.height - 4*3];
+	}
 }
 
 /** Generic obstacle. */
@@ -145,7 +157,8 @@ function Obstacle(engine) {
         this.rot = Math.random() * 2 * Math.PI;
         this.pos.x = Math.random() * (this.engine.canvas.width-100) + 50;
         this.pos.y = -Math.random() * this.engine.canvas.height - this.rad;
-        this.getAnimation().index = Math.floor(Math.random() * 6);
+        this.getAnimation().index = Math.floor(Math.random() * 5);
+	this.rad -= 2;
 	}
 	
 	/* Randomize on initialization. */
@@ -201,11 +214,12 @@ function Drift(canvas) {
     /* Random data. */
     this.cache = {};
     this.cache["lastSkillBonus"] = 0;
-    
+    this.cache["skillBonusCount"] = 0;    
+
     /* Game objects. */
     this.entities = {};
     this.playlist = [];
-	this.messages = [];
+    this.messages = [];
 
     /* State. */
     this.state = STATE.LOAD;
@@ -215,9 +229,12 @@ function Drift(canvas) {
     this.rate = 100;
     this.target = 1000;
 	
-	/* Score. */
-	this.score = 0;
-    
+    /* Score. */
+    this.score = 0;
+
+    /* Boost. */
+    this.boost = 100;
+
     /** Setup the engine. */
     this.setup = function() {
         
@@ -230,7 +247,7 @@ function Drift(canvas) {
         /* Create entities. */
         this.entities.boat = new Boat(this);
         this.entities.background = new Background(this);
-		for (var i = 0; i < this.difficulty; i++) this.entities["obstacle" + i] = new Obstacle(this);
+        for (var i = 0; i < this.difficulty; i++) this.entities["obstacle" + i] = new Obstacle(this);
         
         /* Queue resources. */
         this.manager.queue("boat", RESOURCE.IMAGE, "assets/boat.png");
@@ -240,10 +257,10 @@ function Drift(canvas) {
             
             /* Alot resources. */
             var boatSheet = new Sheet(that.manager.$("boat"), 1, 3);
-			var obstacleSheet = new Sheet(that.manager.$("obstacles"), 2, 3);
+            var obstacleSheet = new Sheet(that.manager.$("obstacles"), 2, 3);
             that.entities.boat.setSheet(boatSheet);
             that.entities.background.image = that.manager.$("water");
-			for (var i = 0; i < that.difficulty; i++) that.entities["obstacle" + i].setSheet(obstacleSheet);
+            for (var i = 0; i < that.difficulty; i++) that.entities["obstacle" + i].setSheet(obstacleSheet);
             console.log("Loaded resources.")
             
             /* Set up menu. */
@@ -286,6 +303,8 @@ function Drift(canvas) {
         this.state = STATE.PLAY;
         this.target = 1;
         this.score = 0;
+        this.cache["skillBonusCount"] = 0;
+        this.boost = 100;
     }
     
     /** Pause the engine. */
@@ -309,6 +328,7 @@ function Drift(canvas) {
 		this.context.textAlign = "right";
 		this.context.fillText(Math.floor(this.score), this.canvas.width-10, 10);
 		this.context.textAlign = "center";
+                this.context.fillText("BOOST: " + Math.max(0, Math.floor(this.boost)), this.canvas.width/2, 10);
 		for (var i = 0; i < this.messages.length; i++) 
 		this.context.fillText(this.messages[i], this.canvas.width/2, this.canvas.height/2+20*i);
 	}
@@ -324,10 +344,19 @@ function Drift(canvas) {
     /** Update the engine. */
     this.update = function(delta) {
          
-		/* Check start. */
-		if (this.keyboard[KEY.SPACE] == KEY.PRESSED) {
+        /* Check start. */
+        if (this.keyboard[KEY.SPACE] == KEY.PRESSED) {
             if (this.state == STATE.MENU) this.play();
             else if (this.state == STATE.DEAD) this.replay();
+        }
+
+        /* Boost. */
+        var up = this.keyboard[KEY.UP] || this.keyboard[KEY.W];
+        if (up && this.state == STATE.PLAY && this.boost > 0) {
+            this.entities.boat.temp.boost = 0.2;
+            this.boost -= delta/16 * 2;
+        } else {
+            this.boost = Math.min(this.boost+0.05, 100);
         }
             
         /* Check pause. */
@@ -355,16 +384,21 @@ function Drift(canvas) {
 	
     /* Check if a boat and an obstacle are colliding. */
 	this.colliding = function(obstacle, boat) {
-        
+        var bbox = boat.bbox();
+		
         /* Get boat center position. */
 		var bcx = boat.pos.x;
 		var bcy = boat.pos.y;
 
         /* Get top left and copy. */
-		var bx = bcx - boat.width / 2;
-		var by = bcy - boat.height / 2;
+		var bx = bbox[0];
+		var by = bbox[1];
 		var brx = bx;
 		var bry = by;
+		
+		/* Get boat size. */
+		var bw = bbox[2];
+		var bh = bbox[3];
 		
         /* Get obstacle top left. */
 		var ocx = obstacle.pos.x;
@@ -379,12 +413,12 @@ function Drift(canvas) {
 
 		/* Find the unrotated closest x point from center of unrotated circle. */
 		if (cux < brx) cx = brx;
-		else if (cux > brx + boat.width) cx = brx + boat.width;
+		else if (cux > brx + bw) cx = brx + bw;
 		else cx = cux;
 	 
 		/* Find the unrotated closest y point from center of unrotated circle. */
 		if (cuy < bry) cy = bry;
-		else if (cuy > bry + boat.height) cy = bry + boat.height;
+		else if (cuy > bry + bh) cy = bry + bh;
 		else cy = cuy;
 	 
 		/* Determine collision. */
@@ -395,7 +429,12 @@ function Drift(canvas) {
             if (distance - obstacle.rad < 10) {
                 this.cache["lastSkillBonus"] = Date.now();
                 this.score += 10;
-                this.message("Skill bonus", 1000);
+                this.message("SKILL BONUS +10", 1000);
+                this.cache["skillBonusCount"] += 1;
+                if (this.cache["skillBonusCount"] % 5 == 0) {
+                    this.score += 50;
+                    this.message("SUPER SKILL BONUS +50", 1500);
+                }
             }
         }
         
@@ -422,9 +461,9 @@ function Drift(canvas) {
 			this.context.textAlign = "center";
 			this.context.textBaseline = "bottom";
 			this.context.font = "28px Bit";
-			this.context.fillText("Chincoteague Drift", canvas.width/2, canvas.height/3);
+			this.context.fillText("CHINCOTEAGE DRIFT", canvas.width/2, canvas.height/3);
 			this.context.font = "20px Bit";
-			this.context.fillText("Press space to start", canvas.width/2, canvas.height/3+24);
+			this.context.fillText("PRESS SPACE TO START", canvas.width/2, canvas.height/3+24);
             
 		/* If playing. */
         } else if (this.state == STATE.PLAY) {
@@ -440,7 +479,7 @@ function Drift(canvas) {
 			this.context.textAlign = "center";
 			this.context.textBaseline = "bottom";
 			this.context.font = "28px Bit";
-			this.context.fillText("Paused", canvas.width/2, canvas.height/3);
+			this.context.fillText("PAUSED", canvas.width/2, canvas.height/3);
 
         /* If dead. */
         } else if (this.state == STATE.DEAD) {
@@ -448,10 +487,12 @@ function Drift(canvas) {
             this.context.textAlign = "center";
             this.context.textBaseline = "bottom";
             this.context.font = "28px Bit";
-            this.context.fillText("Game over", canvas.width/2, canvas.height/3);
+            this.context.fillText("GAME OVER", canvas.width/2, canvas.height/3);
             this.context.font = "20px Bit";
-            this.context.fillText("Score " + Math.floor(this.score), canvas.width/2, canvas.height/3+30);
-            
+            this.context.fillText("SCORE: " + Math.floor(this.score), canvas.width/2, canvas.height/3+30);
+            //this.context.font = "16px Bit";
+            //this.context.fillText("SKILL BONUS: " + this.cache["skillBonusCount"] + " X 10", canvas.width/2, canvas.height/3+56);           
+
         }
 		
 		/* Display. */
