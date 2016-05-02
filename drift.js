@@ -86,7 +86,8 @@ function Boat(engine) {
     /** Move the boat. */
     this.move = function(delta) {
         this.mov.xv = bound(this.mov.xv-Math.sin(this.rot)*this.mov.xa, this.mov.vb);
-        var mov = this.mov.xv * this.rate * this.engine.rate * delta/16 /* * (this.temp.boost || 1)*/;
+        this.mov.xv -= Math.sin(this.rot) * (this.temp.boost || 0);
+        var mov = this.mov.xv * this.rate * this.engine.rate * delta/16;
         this.pos.x = bound(this.pos.x+mov, this.mov.xb);
     }
 	
@@ -232,6 +233,9 @@ function Drift(canvas) {
     /* Score. */
     this.score = 0;
 
+    /* Boost. */
+    this.boost = 100;
+
     /** Setup the engine. */
     this.setup = function() {
         
@@ -301,6 +305,7 @@ function Drift(canvas) {
         this.target = 1;
         this.score = 0;
         this.cache["skillBonusCount"] = 0;
+        this.boost = 100;
     }
     
     /** Pause the engine. */
@@ -324,6 +329,7 @@ function Drift(canvas) {
 		this.context.textAlign = "right";
 		this.context.fillText(Math.floor(this.score), this.canvas.width-10, 10);
 		this.context.textAlign = "center";
+                this.context.fillText("BOOST: " + Math.max(0, Math.floor(this.boost)), this.canvas.width/2, 10);
 		for (var i = 0; i < this.messages.length; i++) 
 		this.context.fillText(this.messages[i], this.canvas.width/2, this.canvas.height/2+20*i);
 	}
@@ -346,8 +352,12 @@ function Drift(canvas) {
         }
 
         /* Boost. */
-        if (this.keyboard[KEY.SPACE]) {
-            if (this.state == STATE.PLAY) this.entities.boat.temp.boost = 5;
+        var up = this.keyboard[KEY.UP] || this.keyboard[KEY.W];
+        if (up && this.state == STATE.PLAY && this.boost > 0) {
+            this.entities.boat.temp.boost = 0.2;
+            this.boost -= delta/16 * 2;
+        } else {
+            this.boost = Math.min(this.boost+0.05, 100);
         }
             
         /* Check pause. */
