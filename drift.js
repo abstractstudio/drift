@@ -151,7 +151,7 @@ function Obstacle(engine) {
         this.pos.x = Math.random() * (this.engine.canvas.width-100) + 50;
         this.pos.y = -Math.random() * this.engine.canvas.height - this.rad;
         this.getAnimation().index = Math.floor(Math.random() * 5);
-		this.rad -= 2;
+	this.rad -= 2;
 	}
 	
 	/* Randomize on initialization. */
@@ -207,6 +207,7 @@ function Drift(canvas) {
     /* Random data. */
     this.cache = {};
     this.cache["lastSkillBonus"] = 0;
+    this.cache["skillBonusCount"] = 0;
     
     /* Game objects. */
     this.entities = {};
@@ -292,6 +293,7 @@ function Drift(canvas) {
         this.state = STATE.PLAY;
         this.target = 1;
         this.score = 0;
+        this.cache["skillBonusCount"] = 0;
     }
     
     /** Pause the engine. */
@@ -406,7 +408,8 @@ function Drift(canvas) {
             if (distance - obstacle.rad < 10) {
                 this.cache["lastSkillBonus"] = Date.now();
                 this.score += 10;
-                this.message("Skill bonus", 1000);
+                this.message("SKILL BONUS +10", 1000);
+                this.cache["skillBonusCount"] += 1;
             }
         }
         
@@ -433,9 +436,9 @@ function Drift(canvas) {
 			this.context.textAlign = "center";
 			this.context.textBaseline = "bottom";
 			this.context.font = "28px Bit";
-			this.context.fillText("Chincoteague Drift", canvas.width/2, canvas.height/3);
+			this.context.fillText("CHINCOTEAGE DRIFT", canvas.width/2, canvas.height/3);
 			this.context.font = "20px Bit";
-			this.context.fillText("Press space to start", canvas.width/2, canvas.height/3+24);
+			this.context.fillText("PRESS SPACE TO START", canvas.width/2, canvas.height/3+24);
             
 		/* If playing. */
         } else if (this.state == STATE.PLAY) {
@@ -451,7 +454,7 @@ function Drift(canvas) {
 			this.context.textAlign = "center";
 			this.context.textBaseline = "bottom";
 			this.context.font = "28px Bit";
-			this.context.fillText("Paused", canvas.width/2, canvas.height/3);
+			this.context.fillText("PAUSED", canvas.width/2, canvas.height/3);
 
         /* If dead. */
         } else if (this.state == STATE.DEAD) {
@@ -459,10 +462,12 @@ function Drift(canvas) {
             this.context.textAlign = "center";
             this.context.textBaseline = "bottom";
             this.context.font = "28px Bit";
-            this.context.fillText("Game over", canvas.width/2, canvas.height/3);
+            this.context.fillText("GAME OVER", canvas.width/2, canvas.height/3);
             this.context.font = "20px Bit";
-            this.context.fillText("Score " + Math.floor(this.score), canvas.width/2, canvas.height/3+30);
-            
+            this.context.fillText("SCORE: " + Math.floor(this.score), canvas.width/2, canvas.height/3+30);
+            //this.context.font = "16px Bit";
+            //this.context.fillText("SKILL BONUS: " + this.cache["skillBonusCount"] + " X 10", canvas.width/2, canvas.height/3+56);           
+
         }
 		
 		/* Display. */

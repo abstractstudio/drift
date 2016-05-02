@@ -2,15 +2,17 @@
     <head>
         <title>Chincoteague Drift</title>
         <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=0">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
         <style>
-            @font-face { font-family: Bit; src: url("assets/8bit.ttf") format("truetype"); }
-            body { text-align: center; margin-top: 4em; background-color: white; font-family: Verdana; }
-            canvas { border-radius: 0.5em; }
-            p { width: 500; margin: 0em auto; padding: 4em 0em; }
+            @font-face { font-family: Bit; src: url("assets/PressStart2P.ttf") format("truetype"); }
+            body { text-align: center; margin: 2em 0em; background-color: white; font-family: Open Sans; font-size: 16px; }
+            canvas { border-radius: 0.5em; padding-bottom: 4em; }
+            p { width: 700; margin: 1em auto; }
+            a { text-decoration: none; font-weight: bold; color: inherit; 	}
         </style>
         <script type="text/javascript">
             var ENGINE = "abstractengine/";
-			var engine;
+            var engine;
             function start() {
                 require(["drift.js"], function() {
                     console.log("Loaded Drift");
@@ -24,11 +26,21 @@
     </head>
     <body>
         <canvas width=600 height=690 id="canvas">HTML5 unavailable</canvas>
-        <p style="margin-top: 2em;">
-            Chincoteague drift is a skill-based boating game where you must use the slow, trundling drift of the research barge to dodge the dangerous obstacles. See how far you can DRIFT!<br><br>
+        <p>
+            Chincoteague Drift is a skill-based boating game where you must use the slow, 
+            trundling drift of the research barge to dodge the dangerous obstacles. See how far you can drift!<br>
+            Use <b>A</b> or <b>&larr;</b> to turn left and <b>D</b> or <b>&rarr;</b> to turn right. Bonuses are awarded
+            for narrowly skirting around obstacle.
+        </p>
+        <p>
+            Known issues<br>
+            - The boat collision box is slightly weird<br>
+            - Obstacle generation can be impossible<br>
+        </p>
+        <p>
             Art by Dylan K, Maya G, and Noah Kim<br>
-            Developed for the Javascript Abstract Engine<br>
-            By Noah Kim and Arman Siddique as <a href="https://github.com/abstractstudio">Abstract Studio</a><br>            
+            Developed for the Abstract Engine<br>
+            By Noah Kim and Arman Siddique as <a href="https://github.com/abstractstudio">Abstract Studio</a><br>       
         </p>
     </body>
 </html>
