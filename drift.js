@@ -8,7 +8,7 @@ function bound(x, b) { return Math.min(Math.max(x, b[0]), b[1]); }
 function Boat(engine) {
     
     /* Super constructor. */
-    Sprite.call(this, engine, 300, 550, 16*3, 29*3);
+    Sprite.call(this, engine, 300, 550, 16*3, 29*3, 8*3, 10*3);
     
     /* Movement rate. */
     this.rate = 1;
@@ -82,6 +82,11 @@ function Boat(engine) {
         var mov = this.mov.xv * this.rate * this.engine.rate * delta/16;
         this.pos.x = bound(this.pos.x+mov, this.mov.xb);
     }
+	
+	this.bbox = function() {
+		var tl = this.topLeft();
+		return [tl.x, tl.y, this.width, this.height - 4*3];
+	}
 }
 
 /** Generic obstacle. */
@@ -145,7 +150,8 @@ function Obstacle(engine) {
         this.rot = Math.random() * 2 * Math.PI;
         this.pos.x = Math.random() * (this.engine.canvas.width-100) + 50;
         this.pos.y = -Math.random() * this.engine.canvas.height - this.rad;
-        this.getAnimation().index = Math.floor(Math.random() * 6);
+        this.getAnimation().index = Math.floor(Math.random() * 5);
+		this.rad -= 2;
 	}
 	
 	/* Randomize on initialization. */
@@ -355,16 +361,21 @@ function Drift(canvas) {
 	
     /* Check if a boat and an obstacle are colliding. */
 	this.colliding = function(obstacle, boat) {
-        
+        var bbox = boat.bbox();
+		
         /* Get boat center position. */
 		var bcx = boat.pos.x;
 		var bcy = boat.pos.y;
 
         /* Get top left and copy. */
-		var bx = bcx - boat.width / 2;
-		var by = bcy - boat.height / 2;
+		var bx = bbox[0];
+		var by = bbox[1];
 		var brx = bx;
 		var bry = by;
+		
+		/* Get boat size. */
+		var bw = bbox[2];
+		var bh = bbox[3];
 		
         /* Get obstacle top left. */
 		var ocx = obstacle.pos.x;
@@ -379,12 +390,12 @@ function Drift(canvas) {
 
 		/* Find the unrotated closest x point from center of unrotated circle. */
 		if (cux < brx) cx = brx;
-		else if (cux > brx + boat.width) cx = brx + boat.width;
+		else if (cux > brx + bw) cx = brx + bw;
 		else cx = cux;
 	 
 		/* Find the unrotated closest y point from center of unrotated circle. */
 		if (cuy < bry) cy = bry;
-		else if (cuy > bry + boat.height) cy = bry + boat.height;
+		else if (cuy > bry + bh) cy = bry + bh;
 		else cy = cuy;
 	 
 		/* Determine collision. */
