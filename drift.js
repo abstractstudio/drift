@@ -278,9 +278,10 @@ function Drift(canvas) {
         document.addEventListener("mousedown", function(e) {
             var x = that.mouse.x - that.canvas.offsetLeft + document.body.scrollLeft;
             var y = that.mouse.y - that.canvas.offsetTop + document.body.scrollTop;
-            if (that.canvas.width-15 < x && x < that.canvas.width && that.canvas.height-15 < y && y < that.canvas.height) {
+            if (that.canvas.width-30 < x && x < that.canvas.width && that.canvas.height-30 < y && y < that.canvas.height) {
                 if (that.playlist[0].paused) {
                     that.playlist[0].play();
+                    that.playlist[0].addEventListener("ended", function() { that.playlist[0].play(); });
                     that.cache.colors = true;
                     that.cache.target = 5;
                     that.target = 5;
@@ -352,9 +353,12 @@ function Drift(canvas) {
 		this.context.textAlign = "right";
 		this.context.fillText(Math.floor(this.score), this.canvas.width-10, 10);
 		this.context.textAlign = "center";
-                this.context.fillText("BOOST: " + Math.max(0, Math.floor(this.boost)), this.canvas.width/2, 10);
+        this.context.fillText("BOOST: " + Math.max(0, Math.floor(this.boost)), this.canvas.width/2, 10);
 		for (var i = 0; i < this.messages.length; i++) 
 		this.context.fillText(this.messages[i], this.canvas.width/2, this.canvas.height/2+20*i);
+        this.context.textBaseline = "bottom";
+        this.context.textAlign = "right";
+        this.context.fillText("!", this.canvas.width-10, this.canvas.height-10);
 	}
 	
 	/** Leave a text message hanging on screen for a set amount of time. */
