@@ -293,6 +293,10 @@ function Drift(canvas) {
             }
         });
         
+        window.onblur = function() {
+            if (that.state == STATE.PLAY) that.stop();
+        };
+        
         /* Mess around with the context. */
         this.context.imageSmoothingEnabled = false;
 		
