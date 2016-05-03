@@ -278,9 +278,17 @@ function Drift(canvas) {
             var x = that.mouse.x - that.canvas.offsetLeft + document.body.scrollLeft;
             var y = that.mouse.y - that.canvas.offsetTop + document.body.scrollTop;
             if (that.canvas.width-15 < x && x < that.canvas.width && that.canvas.height-15 < y && y < that.canvas.height) {
-                that.playlist[0].play();
-                that.cache.target = 5;
-                that.target = 5;
+                if (that.playlist[0].paused) {
+                    that.playlist[0].play();
+                    that.cache.colors = true;
+                    that.cache.target = 5;
+                    that.target = 5;
+                } else {
+                    that.playlist[0].pause();
+                    that.cache.colors = false;
+                    that.cache.target = 1;
+                    that.target = 1;
+                }
             }
         });
         
@@ -506,6 +514,13 @@ function Drift(canvas) {
 
         }
 		
+        if (this.cache.colors) {
+            this.context.globalAlpha = 0.1;
+            this.context.fillStyle = "hsl(" + (Date.now() / 10)  % 360 + ", 50%, 50%)";
+            this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.context.globalAlpha = 1;
+        }
+        
 		/* Display. */
 		if (this.showDisplay) this.display();
 	}
