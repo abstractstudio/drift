@@ -266,7 +266,7 @@ function Drift(canvas) {
             console.log("Loaded resources.")
             
             /* Add music. */
-            that.manager.$("running").volume = 0.2;
+            that.manager.$("running").volume = 0.02;
             that.playlist.push(that.manager.$("running"));
             
             /* Set up menu. */
