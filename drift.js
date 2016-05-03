@@ -485,7 +485,7 @@ function Drift(canvas) {
 			this.context.textAlign = "center";
 			this.context.textBaseline = "bottom";
 			this.context.font = "28px Bit";
-			this.context.fillText("CHINCOTEAGE DRIFT", canvas.width/2, canvas.height/3);
+			this.context.fillText("CHINCOTEAGUE DRIFT", canvas.width/2, canvas.height/3);
 			this.context.font = "20px Bit";
 			this.context.fillText("PRESS SPACE TO START", canvas.width/2, canvas.height/3+24);
             
