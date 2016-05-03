@@ -383,7 +383,7 @@ function Drift(canvas) {
         if (up && this.state == STATE.PLAY && this.boost > 0) {
             this.entities.boat.temp.boost = 0.2;
             this.boost -= delta/16 * 2;
-        } else {
+        } else if (this.state == STATE.PLAY) {
             this.boost = Math.min(this.boost+0.05, 100);
         }
             
