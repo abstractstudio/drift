@@ -139,7 +139,7 @@ function Obstacle(engine) {
             if (obstacle === this) continue;
 						
             /* Fail and send to bottom if colliding with another or too close. */
-            if (Vector.distance(this.pos, obstacle.pos) < this.rad + obstacle.rad + this.engine.entities.boat.height*Math.sqrt(this.engine.rate)) {
+            if (Vector.distance(this.pos, obstacle.pos) < this.rad + obstacle.rad + this.engine.entities.boat.height*Math.sqrt(this.engine.rate)*1.2) {
                 this.pos.y = this.engine.canvas.height + this.rad + 1;
 				break;
             }
