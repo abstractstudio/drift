@@ -253,6 +253,7 @@ function Drift(canvas) {
         this.manager.queue("boat", RESOURCE.IMAGE, "assets/boat.png");
         this.manager.queue("obstacles", RESOURCE.IMAGE, "assets/obstacles2.png");
         this.manager.queue("water", RESOURCE.IMAGE, "assets/water.png");
+        this.manager.queue("running", RESOURCE.AUDIO, "assets/running.m4a");
         this.manager.load(function() {
             
             /* Alot resources. */
@@ -263,6 +264,10 @@ function Drift(canvas) {
             for (var i = 0; i < that.difficulty; i++) that.entities["obstacle" + i].setSheet(obstacleSheet);
             console.log("Loaded resources.")
             
+            /* Add music. */
+            that.manager.$("running").volume = 0.2;
+            that.playlist.push(that.manager.$("running"));
+            
             /* Set up menu. */
             that.menu();
             
@@ -272,6 +277,11 @@ function Drift(canvas) {
         document.addEventListener("mousedown", function(e) {
             var x = that.mouse.x - that.canvas.offsetLeft + document.body.scrollLeft;
             var y = that.mouse.y - that.canvas.offsetTop + document.body.scrollTop;
+            if (that.canvas.width-15 < x && x < that.canvas.width && that.canvas.height-15 < y && y < that.canvas.height) {
+                that.playlist[0].play();
+                that.cache.target = 5;
+                that.target = 5;
+            }
         });
         
         /* Mess around with the context. */
@@ -301,7 +311,7 @@ function Drift(canvas) {
         this.entities.boat.reset();
         for (var i = 0; i < this.difficulty; i++) this.entities["obstacle"+i].respawn();
         this.state = STATE.PLAY;
-        this.target = 1;
+        this.target = this.cache.target || 1;
         this.score = 0;
         this.cache["skillBonusCount"] = 0;
         this.boost = 100;
@@ -317,6 +327,7 @@ function Drift(canvas) {
     /** Once a round is over. */
     this.dead = function() {
         this.state = STATE.DEAD;
+        this.cache.target = this.target;
         this.target = 0;
     }
 	
