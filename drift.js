@@ -88,6 +88,7 @@ function Boat(engine) {
         this.mov.xv -= Math.sin(this.rot) * (this.temp.boost || 0);
         var mov = this.mov.xv * this.rate * this.engine.rate * delta/16;
         this.pos.x = bound(this.pos.x+mov, this.mov.xb);
+        if (this.mov.xb.indexOf(this.pos.x) > 0) this.mov.xv = 0;
     }
 	
 	this.bbox = function() {
@@ -155,10 +156,10 @@ function Obstacle(engine) {
         this.cpos.y = this.rad;
         this.width = this.height = this.rad*2;
         this.rot = Math.random() * 2 * Math.PI;
-        this.pos.x = Math.random() * (this.engine.canvas.width-100) + 50;
+        this.pos.x = Math.random() * (this.engine.canvas.width-50) + 25;
         this.pos.y = -Math.random() * this.engine.canvas.height - this.rad;
         this.getAnimation().index = Math.floor(Math.random() * 5);
-	this.rad -= 2;
+	    this.rad -= 2;
 	}
 	
 	/* Randomize on initialization. */
