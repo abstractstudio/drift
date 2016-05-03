@@ -139,7 +139,7 @@ function Obstacle(engine) {
             if (obstacle === this) continue;
 						
             /* Fail and send to bottom if colliding with another or too close. */
-            if (Vector.distance(this.pos, obstacle.pos) < this.rad + obstacle.rad + this.engine.entities.boat.height*this.engine.rate) {
+            if (Vector.distance(this.pos, obstacle.pos) < this.rad + obstacle.rad + this.engine.entities.boat.height*Math.sqrt(this.engine.rate)) {
                 this.pos.y = this.engine.canvas.height + this.rad + 1;
 				break;
             }
@@ -519,7 +519,11 @@ function Drift(canvas) {
             this.context.fillStyle = "hsl(" + (Date.now() / 10)  % 360 + ", 50%, 50%)";
             this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
             this.context.globalAlpha = 1;
+        } else {
+            this.context.globalAlpha = 1;
+            this.context.fillStyle = "black";
         }
+        
         
 		/* Display. */
 		if (this.showDisplay) this.display();
