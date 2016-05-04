@@ -88,7 +88,7 @@ function Boat(engine) {
         this.mov.xv -= Math.sin(this.rot) * (this.temp.boost || 0);
         var mov = this.mov.xv * this.rate * this.engine.rate * delta/16;
         this.pos.x = bound(this.pos.x+mov, this.mov.xb);
-        if (this.mov.xb.indexOf(this.pos.x) > 0) this.mov.xv = 0;
+        if (this.mov.xb.indexOf(this.pos.x) > -1) this.mov.xv = 0;
     }
 	
 	this.bbox = function() {
