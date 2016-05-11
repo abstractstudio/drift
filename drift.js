@@ -52,13 +52,16 @@ function Boat(engine) {
             speed: 0.2, 
             speedVar: 0.05, 
             angle: Math.PI/2, 
-            angleVar: 10 * Math.PI/180,  
+            angleVar: 7.5 * Math.PI/180,  
             life: 300, 
-            lifeVar: 100, 
+            lifeVar: 50, 
             startRadius: 1.5, 
             startRadiusVar: 0.25, 
-            startColor: [145, 181, 255, 255]
-          //  startColorVar: [20, 5, 0, 0]
+            endRadius: 1.0, 
+            endRadiusVar: 0.2, 
+            startColor: [145, 181, 255, 255], 
+            startColorVar: [10, 5, 0, 0],
+            endColor: [175, 201, 255, 255]
             
         });
         this.particleSystem.totalParticles = 1024;
@@ -94,10 +97,13 @@ function Boat(engine) {
             this.move(delta);
             
             /* Update particle system. */
-            console.log(this.rot + " " + this.particleSystem.properties.angle);
-            this.particleSystem.properties.pos.x = this.pos.x + this.width/2*Math.sin(this.rot);
+            this.particleSystem.properties.pos.x = this.pos.x + this.particleYOffset*Math.sin(this.rot);
+            this.particleSystem.properties.posVar.x = (this.width/2 - 2) * Math.cos(this.rot);
             this.particleSystem.properties.pos.y = this.pos.y + this.particleYOffset*Math.cos(this.rot);
+            this.particleSystem.properties.posVar.y = (this.width/2 - 2) * Math.sin(this.rot);
+            
             this.particleSystem.properties.angle = Math.PI/2 - this.rot;
+            this.particleSystem.properties.startRadius = 2 + Math.abs(this.rot)*2.0;
             this.particleSystem.update(delta);
         
         }
@@ -511,8 +517,9 @@ function Drift(canvas) {
 
         /* Autodraw the entities. */
 		for (var name in this.entities) if (this.entities[name].autorender) this.entities[name].render(this.context);
-		this.entities.boat.render(this.context);
         this.entities.boat.particleSystem.render(this.context);
+		this.entities.boat.render(this.context);
+        
         
 		/* Do before drawing entities. */
         if (this.state == STATE.MENU) {
