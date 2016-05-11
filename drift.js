@@ -8,7 +8,7 @@ function bound(x, b) { return Math.min(Math.max(x, b[0]), b[1]); }
 function Boat(engine) {
     
     /* Super constructor. */
-    Sprite.call(this, engine, 300, 550, 16*3, 29*3, 8*3, 10*3);
+    Sprite.call(this, engine, 300, 550, 16*3, 28*3, 8*3, 10*3);
     
     /* Movement rate. */
     this.rate = 1;
@@ -30,6 +30,10 @@ function Boat(engine) {
     this.autoupdate = true;
     this.autorender = false;
     
+    /* Water particle system. */
+    this.particleSystem = new ParticleSystem(this.pos.x, this.pos.y);
+    this.particleYOffset = this.height/2 - 2;
+    
     /* Animation. */
     this.animation = "boat";
     this.addAnimation(new Animation("boat", [0, 1, 2]));
@@ -41,6 +45,25 @@ function Boat(engine) {
         this.pos.x = 300;
         this.pos.y = 550;
         this.mov.xv = 0;
+        
+        this.particleSystem = new ParticleSystem(this.pos.x, this.pos.y + this.particleYOffset);
+        this.particleSystem.setProperties({
+            posVar: new Vector(this.width/2 - 4, 0), 
+            speed: 0.2, 
+            speedVar: 0.05, 
+            angle: Math.PI/2, 
+            angleVar: 10 * Math.PI/180,  
+            life: 300, 
+            lifeVar: 100, 
+            startRadius: 1.5, 
+            startRadiusVar: 0.25, 
+            startColor: [145, 181, 255, 255]
+          //  startColorVar: [20, 5, 0, 0]
+            
+        });
+        this.particleSystem.totalParticles = 1024;
+        this.particleSystem.emissionRate = 10.35;
+        this.particleSystem.init();
     }
     
     /** Update the boat. */
@@ -69,6 +92,13 @@ function Boat(engine) {
 
             /* Move. */
             this.move(delta);
+            
+            /* Update particle system. */
+            console.log(this.rot + " " + this.particleSystem.properties.angle);
+            this.particleSystem.properties.pos.x = this.pos.x + this.width/2*Math.sin(this.rot);
+            this.particleSystem.properties.pos.y = this.pos.y + this.particleYOffset*Math.cos(this.rot);
+            this.particleSystem.properties.angle = Math.PI/2 - this.rot;
+            this.particleSystem.update(delta);
         
         }
 
@@ -247,6 +277,7 @@ function Drift(canvas) {
         
         /* Create entities. */
         this.entities.boat = new Boat(this);
+        this.entities.boat.reset();
         this.entities.background = new Background(this);
         for (var i = 0; i < this.difficulty; i++) this.entities["obstacle" + i] = new Obstacle(this);
         
@@ -481,11 +512,13 @@ function Drift(canvas) {
         /* Autodraw the entities. */
 		for (var name in this.entities) if (this.entities[name].autorender) this.entities[name].render(this.context);
 		this.entities.boat.render(this.context);
+        this.entities.boat.particleSystem.render(this.context);
         
 		/* Do before drawing entities. */
         if (this.state == STATE.MENU) {
 
             /* Draw the title and buttons. */
+            this.context.fillStyle = "black";
 			this.context.textAlign = "center";
 			this.context.textBaseline = "bottom";
 			this.context.font = "28px Bit";
@@ -504,6 +537,7 @@ function Drift(canvas) {
         } else if (this.state == STATE.STOP) {
 			
             /* Draw the title and buttons. */
+            this.context.fillStyle = "black";
 			this.context.textAlign = "center";
 			this.context.textBaseline = "bottom";
 			this.context.font = "28px Bit";
@@ -511,7 +545,7 @@ function Drift(canvas) {
 
         /* If dead. */
         } else if (this.state == STATE.DEAD) {
-            
+            this.context.fillStyle = "black";
             this.context.textAlign = "center";
             this.context.textBaseline = "bottom";
             this.context.font = "28px Bit";
