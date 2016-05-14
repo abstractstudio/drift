@@ -30,6 +30,10 @@ function Boat(engine) {
     this.autoupdate = true;
     this.autorender = false;
     
+    /* Shooting. */
+    this.cooldown = 200;
+    this.lastShootTime = 0;
+    
     /* Water particle system. */
     this.particleSystem = new ParticleSystem(this.pos.x, this.pos.y);
     this.sideParticleSystem = new ParticleSystem(this.pos.x, this.pos.y);
@@ -60,7 +64,7 @@ function Boat(engine) {
             startRadiusVar: 0.25, 
             endRadius: 1.0, 
             endRadiusVar: 0.2, 
-            startColor: [145, 181, 255, 255], 
+            startColor: [101, 150, 187, 255], 
             startColorVar: [10, 5, 0, 0],
             endColor: [175, 201, 255, 255]
             
@@ -82,7 +86,7 @@ function Boat(engine) {
             startRadiusVar: 0.25, 
             endRadius: 1.0, 
             endRadiusVar: 0.2, 
-            startColor: [145, 181, 255, 255], 
+            startColor: [101, 150, 187, 255], 
             startColorVar: [10, 5, 0, 0],
             endColor: [175, 201, 255, 255]
             
@@ -121,6 +125,20 @@ function Boat(engine) {
             
             /* Update particle systems. */
             this.updateParticles(delta);
+            
+            /* Fire lasers. */
+            for (var i = 0; i < 10; i++) {
+                if (keyboard[76] && !this.engine.entities["laser"+i].active && Date.now() - this.lastShootTime > this.cooldown) { // L
+                    this.engine.entities["laser"+i].active = true;
+                    this.engine.entities["laser"+i].pos = new Vector(this.pos.x, this.pos.y);
+                    this.engine.entities["laser"+i].rot = this.rot + Math.PI/2;
+                    this.engine.entities["laser"+i].speed = 20;
+                    this.lastShootTime = Date.now();
+                    console.log("shot " + this.rot);
+                }
+                this.engine.entities["laser"+i].update(delta);
+                //console.log(this.engine.entities["laser"+i].pos.x + " " + this.engine.entities["laser"+i].pos.y + " " + keyboard[76]);
+            }
         }
 
         this.temp = {};
@@ -171,6 +189,41 @@ function Boat(engine) {
 	}
 }
 
+function Projectile(engine, x, y, angle, speed) {
+    
+    /* Super constructor. */
+    Sprite.call(this, engine, x || 0, y || 0, 290/8, 74/4);
+    
+    this.active = false;
+    
+    /* Movement. */
+    this.rate = 1;
+    this.speed = speed || 0;
+    this.rot = angle || 0;
+    
+    /* Auto. */
+    this.autoupdate = false;
+    this.autorender = false;
+    
+    this.update = function(delta) {
+        if (!this.active) return;
+        
+        this.pos.x += this.speed * this.rate * delta/16.0 * Math.cos(this.rot);
+        this.pos.y += this.speed * this.rate * delta/16.0 * -Math.sin(this.rot);
+        
+        // Check if off-screen
+        if (this.pos.x + this.width < 0 || this.pos.y + this.height < 0 || this.pos.x - this.width > 600 || this.pos.y - this.height > 690) {
+            this.active = false;
+        }
+    }
+
+    this.bbox = function() {
+        var tl = this.topLeft();
+		return [tl.x, tl.y, this.width, this.height];
+    }
+    
+}
+
 /** Generic obstacle. */
 function Obstacle(engine) {
 		
@@ -182,6 +235,8 @@ function Obstacle(engine) {
 	this.rad = 0;
 	this.rot = 0;
 	this.mov = {yv: 2};
+    
+    this.detectCollision = true;
 	
 	/* Auto. */
 	this.autoupdate = true;
@@ -234,6 +289,9 @@ function Obstacle(engine) {
         this.pos.y = -Math.random() * this.engine.canvas.height - this.rad;
         this.getAnimation().index = Math.floor(Math.random() * 5);
 	    this.rad -= 2;
+        this.detectCollision = true;
+        this.autoupdate = true;
+        this.autorender = true;
 	}
 	
 	/* Randomize on initialization. */
@@ -324,11 +382,13 @@ function Drift(canvas) {
         this.entities.boat.reset();
         this.entities.background = new Background(this);
         for (var i = 0; i < this.difficulty; i++) this.entities["obstacle" + i] = new Obstacle(this);
+        for (var i = 0; i < 10; i++) this.entities["laser" + i] = new Projectile(this, this.entities.boat.pos.x, this.entities.boat.pos.y);
         
         /* Queue resources. */
         this.manager.queue("boat", RESOURCE.IMAGE, "assets/boat.png");
         this.manager.queue("obstacles", RESOURCE.IMAGE, "assets/obstacles2.png");
         this.manager.queue("water", RESOURCE.IMAGE, "assets/water.png");
+        this.manager.queue("laser", RESOURCE.IMAGE, "assets/laser.png");
         this.manager.queue("running", RESOURCE.AUDIO, "assets/running.m4a");
         this.manager.load(function() {
             
@@ -337,6 +397,7 @@ function Drift(canvas) {
             var obstacleSheet = new Sheet(that.manager.$("obstacles"), 2, 3);
             that.entities.boat.setSheet(boatSheet);
             that.entities.background.image = that.manager.$("water");
+            for (var i = 0; i < 10; i++) that.entities["laser" + i].sheet = new Sheet(that.manager.$("laser"));
             for (var i = 0; i < that.difficulty; i++) that.entities["obstacle" + i].setSheet(obstacleSheet);
             console.log("Loaded resources.")
             
@@ -476,8 +537,23 @@ function Drift(canvas) {
         if (this.state == STATE.PLAY) {
             for (var i = 0; i < this.difficulty; i++) {
                 var obstacle = this.entities["obstacle" + i];
-                if (this.colliding(obstacle, this.entities.boat)) this.dead();
+                if (!obstacle.detectCollision) continue;
+                
+                if (this.colliding(obstacle, this.entities.boat, true)) {
+                    this.dead();
+                    break;
+                }
+                
+                for (var j = 0; j < 10; j++) {
+                    var laser = this.entities["laser" + j];
+                    if (laser.active && this.colliding(obstacle, laser, false)) {
+                        laser.active = false;
+                        obstacle.autorender = false;
+                        obstacle.detectCollision = false;
+                    }
+                }
             }
+            
         }
 		
         /* Update the superclass. */
@@ -486,12 +562,12 @@ function Drift(canvas) {
     }
 	
     /* Check if a boat and an obstacle are colliding. */
-	this.colliding = function(obstacle, boat) {
-        var bbox = boat.bbox();
+	this.colliding = function(obstacle, sprite, isBoat) {
+        var bbox = sprite.bbox();
 		
         /* Get boat center position. */
-		var bcx = boat.pos.x;
-		var bcy = boat.pos.y;
+		var bcx = sprite.pos.x;
+		var bcy = sprite.pos.y;
 
         /* Get top left and copy. */
 		var bx = bbox[0];
@@ -508,8 +584,8 @@ function Drift(canvas) {
 		var ocy = obstacle.pos.y;
 		
 		/* Rotate circle's center point back. */
-		var cux = Math.cos(boat.rot) * (ocx-bcx) - Math.sin(boat.rot) * (ocy-bcy) + bcx;
-		var cuy = Math.sin(boat.rot) * (ocx-bcx) + Math.cos(boat.rot) * (ocy-bcy) + bcy;
+		var cux = Math.cos(sprite.rot) * (ocx-bcx) - Math.sin(sprite.rot) * (ocy-bcy) + bcx;
+		var cuy = Math.sin(sprite.rot) * (ocx-bcx) + Math.cos(sprite.rot) * (ocy-bcy) + bcy;
 
 		/* Closest point in the rectangle to the center of circle rotated backwards (unrotated). */
 		var cx, cy;
@@ -528,7 +604,7 @@ function Drift(canvas) {
 		var distance = Math.sqrt((cx-cux)*(cx-cux)+(cy-cuy)*(cy-cuy));
         
         /* Piggy back and check skill bonus. */
-        if (Date.now() - this.cache["lastSkillBonus"] > 1500) {
+        if (isBoat && Date.now() - this.cache["lastSkillBonus"] > 1500) {
             if (distance - obstacle.rad < 10) {
                 this.cache["lastSkillBonus"] = Date.now();
                 this.score += 10;
@@ -556,6 +632,11 @@ function Drift(canvas) {
         /* Autodraw the entities. */
 		for (var name in this.entities) if (this.entities[name].autorender) this.entities[name].render(this.context);
         this.entities.boat.renderParticles(this.context);
+        for (var i = 0; i < 10; i++) {
+            if (this.entities["laser"+i].active) {
+                this.entities["laser"+i].render(this.context);
+            }
+        }
 		this.entities.boat.render(this.context);
         
         //this.context.fillRect(this.entities.boat.particleSystem.properties.pos.x - 2, this.entities.boat.particleSystem.properties.pos.y - 2, 4, 4);
