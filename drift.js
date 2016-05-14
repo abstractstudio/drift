@@ -32,7 +32,8 @@ function Boat(engine) {
     
     /* Water particle system. */
     this.particleSystem = new ParticleSystem(this.pos.x, this.pos.y);
-    this.particleYOffset = this.height/2 - 2;
+    this.sideParticleSystem = new ParticleSystem(this.pos.x, this.pos.y);
+    this.particleYOffset = this.width/2;
     
     /* Animation. */
     this.animation = "boat";
@@ -64,9 +65,31 @@ function Boat(engine) {
             endColor: [175, 201, 255, 255]
             
         });
-        this.particleSystem.totalParticles = 1024;
-        this.particleSystem.emissionRate = 10.35;
+        this.particleSystem.totalParticles = 512;
+        this.particleSystem.emissionRate = 1.6;
         this.particleSystem.init();
+        
+        this.sideParticleSystem = new ParticleSystem(this.pos.x, this.pos.y + this.particleYOffset);
+        this.sideParticleSystem.setProperties({
+            posVar: new Vector(this.width/2 - 4, 0), 
+            speed: 0.2, 
+            speedVar: 0.05, 
+            angle: Math.PI/2, 
+            angleVar: 10.0 * Math.PI/180,  
+            life: 500, 
+            lifeVar: 50, 
+            startRadius: 1.5, 
+            startRadiusVar: 0.25, 
+            endRadius: 1.0, 
+            endRadiusVar: 0.2, 
+            startColor: [145, 181, 255, 255], 
+            startColorVar: [10, 5, 0, 0],
+            endColor: [175, 201, 255, 255]
+            
+        });
+        this.sideParticleSystem.totalParticles = 512;
+        this.sideParticleSystem.emissionRate = 1.0;
+        this.sideParticleSystem.init();
     }
     
     /** Update the boat. */
@@ -96,20 +119,35 @@ function Boat(engine) {
             /* Move. */
             this.move(delta);
             
-            /* Update particle system. */
-            this.particleSystem.properties.pos.x = this.pos.x + this.particleYOffset*Math.sin(this.rot);
-            this.particleSystem.properties.posVar.x = (this.width/2 - 2) * Math.cos(this.rot);
-            this.particleSystem.properties.pos.y = this.pos.y + this.particleYOffset*Math.cos(this.rot);
-            this.particleSystem.properties.posVar.y = (this.width/2 - 2) * Math.sin(this.rot);
-            
-            this.particleSystem.properties.angle = Math.PI/2 - this.rot;
-            this.particleSystem.properties.startRadius = 2 + Math.abs(this.rot)*2.0;
-            this.particleSystem.update(delta);
-        
+            /* Update particle systems. */
+            this.updateParticles(delta);
         }
 
         this.temp = {};
         
+    }
+    
+    this.updateParticles = function(delta) {
+        this.particleSystem.properties.pos.x = this.pos.x + this.particleYOffset*Math.sin(this.rot);
+        this.particleSystem.properties.posVar.x = (this.width/2 - 2) * Math.cos(this.rot);
+        this.particleSystem.properties.pos.y = this.pos.y + this.particleYOffset*Math.cos(this.rot);
+        this.particleSystem.properties.posVar.y = (this.width/2 - 2) * Math.sin(this.rot);
+        this.particleSystem.properties.angle = Math.PI/2 - this.rot;
+        this.particleSystem.properties.startRadius = 2 + Math.abs(this.rot)*1.5;
+        this.particleSystem.update(delta);
+
+        this.sideParticleSystem.properties.pos.x = this.pos.x + this.particleYOffset*Math.sin(this.rot);
+        this.sideParticleSystem.properties.posVar.x = (this.width/2 - 8) * Math.cos(this.rot);
+        this.sideParticleSystem.properties.pos.y = this.pos.y - this.particleYOffset*Math.cos(this.rot);
+        this.sideParticleSystem.properties.posVar.y = (this.width/2 - 8) * Math.sin(this.rot);
+        this.sideParticleSystem.properties.angle = Math.PI/2 - this.rot;
+        this.sideParticleSystem.properties.startRadius = 2 + Math.abs(this.rot)*2.0;
+        this.sideParticleSystem.update(delta);
+    }
+    
+    this.renderParticles = function(context) {
+        this.particleSystem.render(context);
+        this.sideParticleSystem.render(context);
     }
     
     /** Turn the boat. */
@@ -517,9 +555,12 @@ function Drift(canvas) {
 
         /* Autodraw the entities. */
 		for (var name in this.entities) if (this.entities[name].autorender) this.entities[name].render(this.context);
-        this.entities.boat.particleSystem.render(this.context);
+        this.entities.boat.renderParticles(this.context);
 		this.entities.boat.render(this.context);
         
+        //this.context.fillRect(this.entities.boat.particleSystem.properties.pos.x - 2, this.entities.boat.particleSystem.properties.pos.y - 2, 4, 4);
+        //this.context.fillStyle = "black";
+        //this.context.fillRect(this.entities.boat.particleSystem.properties.pos.x - this.entities.boat.particleSystem.properties.posVar.x, this.entities.boat.particleSystem.properties.pos.y - this.entities.boat.particleSystem.properties.posVar.y, this.entities.boat.particleSystem.properties.posVar.x, this.entities.boat.particleSystem.properties.posVar.y);
         
 		/* Do before drawing entities. */
         if (this.state == STATE.MENU) {
