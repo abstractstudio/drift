@@ -1,15 +1,13 @@
 <html>
     <head>
+        
+        <!-- Title and includes. -->
         <title>Chincoteague Drift</title>
         <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=0">
         <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
-        <style>
-            @font-face { font-family: Bit; src: url("assets/PressStart2P.ttf") format("truetype"); }
-            body { text-align: center; margin: 2em 0em; background-color: white; font-family: Open Sans; font-size: 16px; }
-            canvas { border-radius: 0.5em; padding-bottom: 4em; }
-            p { width: 550; margin: 1em auto; }
-            a { text-decoration: none; font-weight: bold; color: inherit; 	}
-        </style>
+        <link rel="stylesheet" type="text/css" href="styles.css">
+        
+        <!-- Engine setup. -->
         <script type="text/javascript">
             var ENGINE = "abstractengine/";
             var engine;
@@ -22,25 +20,66 @@
                 });
             }
         </script>
+        
+        <!-- Engine startup. -->
         <script type="text/javascript" src="abstractengine/setup.js"></script>
+    
     </head>
     <body>
+        
+        <!-- The canvas for the engine. -->
         <canvas width=600 height=690 id="canvas">HTML5 unavailable</canvas>
-        <p>
-            Chincoteague Drift is a skill-based boating game where you must use the slow, 
-            trundling drift of the research barge to dodge the dangerous obstacles. See how far you can drift!<br><br>
-            Use <b>A</b> or <b>&larr;</b> to turn left and <b>D</b> or <b>&rarr;</b> to turn right. <b>W</b> and <b>&rarr;</b> boost the boat.
-            Bonuses are awarded for narrowly skirting around obstacle.
-        </p>
-        <p>
-            Known issues<br>
-            - The boat collision box is slightly weird<br>
-            - Obstacle generation can be impossible<br>
-        </p>
-        <p>
-            Art by Dylan K, Maya G, and Noah Kim<br>
-            Developed for the Abstract Engine<br>
-            By Noah Kim and Arman Siddique as <a href="https://github.com/abstractstudio">Abstract Studio</a><br>       
-        </p>
+        
+        <!-- The description of drift. -->
+        <div id="description">
+            <p>
+                Chincoteague Drift is a skill-based boating game where you must use the slow, 
+                trundling drift of the research barge to dodge the dangerous obstacles. See how far you can drift!<br><br>
+                Use <b>A</b> or <b>&larr;</b> to turn left and <b>D</b> or <b>&rarr;</b> to turn right. <b>W</b> and <b>&rarr;</b> boost the boat.
+                Bonuses are awarded for narrowly skirting around obstacle.
+            </p>
+            <p>
+                Art by Dylan Kim and Noah Kim<br>
+                Developed for the Abstract Engine<br>
+                By Noah Kim and Arman Siddique as <a href="https://github.com/abstractstudio">Abstract Studio</a><br>       
+            </p>
+        </div>
+        
+        <!-- A little button. -->
+        <div id="button" onclick="javascript: toggleDescription();">
+            &darr;
+        </div>
+        
+        <!-- Pretty formatting. -->
+        <script type="text/javascript">
+            var hidden = false;
+            var description = document.getElementById("description");
+            var button = document.getElementById("button");
+            
+            function hideDescription() {
+                hidden = true;
+                description.style.transform = "";
+                button.style.transform = "";
+            }
+            
+            function showDescription() {
+                hidden = false;
+                description.style.transform = "translate(0, -100%)";
+                button.style.transform = "rotate(180deg)";
+                engine.stop();
+            }
+            
+            function toggleDescription() {
+                if (hidden) showDescription();
+                else hideDescription();
+            }
+            
+            document.addEventListener("mousewheel", function(e) {
+                if (e.wheelDelta > 0) hideDescription();
+                else showDescription();
+            });
+        
+        </script>        
+        
     </body>
 </html>

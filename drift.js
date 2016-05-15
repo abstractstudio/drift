@@ -334,7 +334,7 @@ function Background(engine) {
         var h2 = this.scroll;
         var w = this.engine.canvas.width;
         context.drawImage(this.image, 0, 0, w / this.ratio, h1 / this.ratio, 0, this.scroll, w, h1);
-        context.drawImage(this.image, 0, h1 / this.ratio, w / this.ratio, h2 / this.ratio, 0, 0, w, h2);
+        if (h2) context.drawImage(this.image, 0, h1 / this.ratio, w / this.ratio, h2 / this.ratio, 0, 0, w, h2);
     }
         
 }
@@ -537,7 +537,7 @@ function Drift(canvas) {
         this.context.textAlign = "right";
         this.context.fillText("!", this.canvas.width-10, this.canvas.height-10);
         this.context.textAlign = "left";
-        this.context.fillText("!", 10, this.canvas.height - 10);
+        this.context.fillText("~", 10, this.canvas.height - 10);
 	}
 	
 	/** Leave a text message hanging on screen for a set amount of time. */
@@ -720,6 +720,8 @@ function Drift(canvas) {
 			this.context.textBaseline = "bottom";
 			this.context.font = "28px Bit";
 			this.context.fillText("PAUSED", canvas.width/2, canvas.height/3);
+            this.context.font = "20px Bit";
+            this.context.fillText("ESCAPE TO TOGGLE", canvas.width/2, canvas.height/3+30);
 
         /* If dead. */
         } else if (this.state == STATE.DEAD) {
