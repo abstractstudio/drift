@@ -125,7 +125,8 @@ function Boat(engine) {
             this.move(delta);
             
             /* Update particle systems. */
-            this.updateParticles(delta * bound(this.engine.rate, [0, 1.5]));
+            var boost = this.temp.boost > 0 ? 0.75 : 0.5;
+            this.updateParticles(delta * bound(this.engine.rate, [0, 1.5]) * boost);
             
             /* Fire lasers. */
             for (var i = 0; i < 10; i++) {
@@ -151,23 +152,25 @@ function Boat(engine) {
         this.particleSystem.properties.pos.y = this.pos.y + this.particleYOffset*Math.cos(this.rot);
         this.particleSystem.properties.posVar.y = (this.width/2 - 2) * Math.sin(this.rot);
         this.particleSystem.properties.angle = Math.PI/2 - this.rot;
-        this.particleSystem.properties.startRadius = 2.5 + Math.abs(this.rot)*1.5;
+        //this.particleSystem.properties.startRadius = 2.5 + Math.abs(this.rot)*1.5;
         this.particleSystem.update(delta);
 
+        /*
         this.sideParticleSystem.properties.pos.x = this.pos.x + this.particleYOffset*Math.sin(this.rot);
         this.sideParticleSystem.properties.posVar.x = (this.width/2 - 8) * Math.cos(this.rot);
         this.sideParticleSystem.properties.pos.y = this.pos.y - this.particleYOffset*Math.cos(this.rot);
         this.sideParticleSystem.properties.posVar.y = (this.width/2 - 8) * Math.sin(this.rot);
-        this.sideParticleSystem.properties.angle = Math.PI/2 - this.rot;
-        this.sideParticleSystem.properties.startRadius = 2.5 + Math.abs(this.rot)*2.0;
+        this.sideParticleSystem.properties.angle = Math.PI/2 + this.rot;
+        //this.sideParticleSystem.properties.startRadius = 2.5 + Math.abs(this.rot)*2.0;
         this.sideParticleSystem.update(delta);
+        */
     }
     
     this.renderParticles = function(context, image) {
         this.particleSystem.properties.image = image;
         this.sideParticleSystem.properties.image = image;
         this.particleSystem.render(context);
-        this.sideParticleSystem.render(context);
+        //this.sideParticleSystem.render(context);
     }
     
     /** Turn the boat. */
@@ -428,7 +431,9 @@ function Drift(canvas) {
                 if (that.playlist[0].paused) {
                     that.playlist[1].pause();
                     that.cache.loveMode = false;
-                    
+
+                    that.entities.boat.particleSystem.properties.startRadius = 2.5;
+                    that.entities.boat.sideParticleSystem.properties.startRadius = 2.5; 
                     that.playlist[0].play();
                     that.playlist[0].addEventListener("ended", function() { that.playlist[0].play(); });
                     that.cache.lsdMode = true;
@@ -450,12 +455,17 @@ function Drift(canvas) {
                     
                     that.playlist[1].play();
                     that.playlist[1].addEventListener("ended", function() { that.playlist[1].play(); });
+                    that.entities.boat.particleSystem.properties.startRadius = 6;
+                    that.entities.boat.sideParticleSystem.properties.startRadius = 6;                    
                     that.cache.loveMode = true;
                     that.cache.target = 0.5;
                     that.target = 0.5;
                 } else {
                     that.playlist[1].pause();
                     that.cache.loveMode = false;
+
+                    that.entities.boat.particleSystem.properties.startRadius = 2.5;
+                    that.entities.boat.sideParticleSystem.properties.startRadius = 2.5; 
                     that.cache.target = 1;
                     that.target = 1;
                 }
@@ -651,7 +661,11 @@ function Drift(canvas) {
             if (distance - obstacle.rad < 10) {
                 this.cache["lastSkillBonus"] = Date.now();
                 this.score += 10;
-                this.message("SKILL BONUS +10", 1000);
+                
+                if (this.cache.loveMode) message = "LOVE BONUS +10";
+                else message = "SKILL BONUS +10";
+                
+                this.message(message, 1000);
                 this.cache["skillBonusCount"] += 1;
                 if (this.cache["skillBonusCount"] % 5 == 0) {
                     this.score += 50;
