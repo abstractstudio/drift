@@ -38,6 +38,7 @@ function Boat(engine) {
     this.particleSystem = new ParticleSystem(this.pos.x, this.pos.y);
     this.sideParticleSystem = new ParticleSystem(this.pos.x, this.pos.y);
     this.particleYOffset = this.width/2;
+    this.particleImage = null;
     
     /* Animation. */
     this.animation = "boat";
@@ -60,17 +61,17 @@ function Boat(engine) {
             angleVar: 7.5 * Math.PI/180,  
             life: 300, 
             lifeVar: 50, 
-            startRadius: 1.5, 
+            startRadius: 2.5, 
             startRadiusVar: 0.25, 
             endRadius: 1.0, 
             endRadiusVar: 0.2, 
             startColor: [101, 150, 187, 255], 
             startColorVar: [10, 5, 0, 0],
-            endColor: [175, 201, 255, 255]
+            endColor: [175, 201, 255, 64]
             
         });
-        this.particleSystem.totalParticles = 512;
-        this.particleSystem.emissionRate = 1.6;
+        this.particleSystem.totalParticles = 64;
+        this.particleSystem.emissionRate = 0.213;
         this.particleSystem.init();
         
         this.sideParticleSystem = new ParticleSystem(this.pos.x, this.pos.y + this.particleYOffset);
@@ -82,17 +83,17 @@ function Boat(engine) {
             angleVar: 10.0 * Math.PI/180,  
             life: 500, 
             lifeVar: 50, 
-            startRadius: 1.5, 
+            startRadius: 2.5, 
             startRadiusVar: 0.25, 
             endRadius: 1.0, 
             endRadiusVar: 0.2, 
             startColor: [101, 150, 187, 255], 
             startColorVar: [10, 5, 0, 0],
-            endColor: [175, 201, 255, 255]
+            endColor: [175, 201, 255, 64]
             
         });
-        this.sideParticleSystem.totalParticles = 512;
-        this.sideParticleSystem.emissionRate = 1.0;
+        this.sideParticleSystem.totalParticles = 64;
+        this.sideParticleSystem.emissionRate = 0.128;
         this.sideParticleSystem.init();
     }
     
@@ -124,7 +125,7 @@ function Boat(engine) {
             this.move(delta);
             
             /* Update particle systems. */
-            this.updateParticles(delta);
+            this.updateParticles(delta * bound(this.engine.rate, [0, 1.5]));
             
             /* Fire lasers. */
             for (var i = 0; i < 10; i++) {
@@ -137,7 +138,6 @@ function Boat(engine) {
                     console.log("shot " + this.rot);
                 }
                 this.engine.entities["laser"+i].update(delta);
-                //console.log(this.engine.entities["laser"+i].pos.x + " " + this.engine.entities["laser"+i].pos.y + " " + keyboard[76]);
             }
         }
 
@@ -151,7 +151,7 @@ function Boat(engine) {
         this.particleSystem.properties.pos.y = this.pos.y + this.particleYOffset*Math.cos(this.rot);
         this.particleSystem.properties.posVar.y = (this.width/2 - 2) * Math.sin(this.rot);
         this.particleSystem.properties.angle = Math.PI/2 - this.rot;
-        this.particleSystem.properties.startRadius = 2 + Math.abs(this.rot)*1.5;
+        this.particleSystem.properties.startRadius = 2.5 + Math.abs(this.rot)*1.5;
         this.particleSystem.update(delta);
 
         this.sideParticleSystem.properties.pos.x = this.pos.x + this.particleYOffset*Math.sin(this.rot);
@@ -159,11 +159,13 @@ function Boat(engine) {
         this.sideParticleSystem.properties.pos.y = this.pos.y - this.particleYOffset*Math.cos(this.rot);
         this.sideParticleSystem.properties.posVar.y = (this.width/2 - 8) * Math.sin(this.rot);
         this.sideParticleSystem.properties.angle = Math.PI/2 - this.rot;
-        this.sideParticleSystem.properties.startRadius = 2 + Math.abs(this.rot)*2.0;
+        this.sideParticleSystem.properties.startRadius = 2.5 + Math.abs(this.rot)*2.0;
         this.sideParticleSystem.update(delta);
     }
     
-    this.renderParticles = function(context) {
+    this.renderParticles = function(context, image) {
+        this.particleSystem.properties.image = image;
+        this.sideParticleSystem.properties.image = image;
         this.particleSystem.render(context);
         this.sideParticleSystem.render(context);
     }
@@ -389,7 +391,9 @@ function Drift(canvas) {
         this.manager.queue("obstacles", RESOURCE.IMAGE, "assets/obstacles2.png");
         this.manager.queue("water", RESOURCE.IMAGE, "assets/water.png");
         this.manager.queue("laser", RESOURCE.IMAGE, "assets/laser.png");
+        this.manager.queue("heart", RESOURCE.IMAGE, "assets/heart.png");
         this.manager.queue("running", RESOURCE.AUDIO, "assets/running.m4a");
+        this.manager.queue("romance", RESOURCE.AUDIO, "assets/romance.mp3");
         this.manager.load(function() {
             
             /* Alot resources. */
@@ -397,6 +401,7 @@ function Drift(canvas) {
             var obstacleSheet = new Sheet(that.manager.$("obstacles"), 2, 3);
             that.entities.boat.setSheet(boatSheet);
             that.entities.background.image = that.manager.$("water");
+            that.cache.heartImage = that.manager.$("heart");
             for (var i = 0; i < 10; i++) that.entities["laser" + i].sheet = new Sheet(that.manager.$("laser"));
             for (var i = 0; i < that.difficulty; i++) that.entities["obstacle" + i].setSheet(obstacleSheet);
             console.log("Loaded resources.")
@@ -404,6 +409,8 @@ function Drift(canvas) {
             /* Add music. */
             that.manager.$("running").volume = 0.02;
             that.playlist.push(that.manager.$("running"));
+            that.manager.$("romance").volume = 0.04;
+            that.playlist.push(that.manager.$("romance"));
             
             /* Set up menu. */
             that.menu();
@@ -412,18 +419,43 @@ function Drift(canvas) {
         
         /* Register click events. */
         document.addEventListener("mousedown", function(e) {
+            if (that.state == STATE.PLAY) return;
             var x = that.mouse.x - that.canvas.offsetLeft + document.body.scrollLeft;
             var y = that.mouse.y - that.canvas.offsetTop + document.body.scrollTop;
+            
+            // Right corner
             if (that.canvas.width-30 < x && x < that.canvas.width && that.canvas.height-30 < y && y < that.canvas.height) {
                 if (that.playlist[0].paused) {
+                    that.playlist[1].pause();
+                    that.cache.loveMode = false;
+                    
                     that.playlist[0].play();
                     that.playlist[0].addEventListener("ended", function() { that.playlist[0].play(); });
-                    that.cache.colors = true;
+                    that.cache.lsdMode = true;
                     that.cache.target = 5;
                     that.target = 5;
                 } else {
                     that.playlist[0].pause();
-                    that.cache.colors = false;
+                    that.cache.lsdMode = false;
+                    that.cache.target = 1;
+                    that.target = 1;
+                }
+            }
+            
+            // Left Corner
+            if (0 < x && x < 30 && that.canvas.height-30 < y && y < that.canvas.height) {
+                if (that.playlist[1].paused) {
+                    that.playlist[0].pause();
+                    that.cache.lsdMode = false;
+                    
+                    that.playlist[1].play();
+                    that.playlist[1].addEventListener("ended", function() { that.playlist[1].play(); });
+                    that.cache.loveMode = true;
+                    that.cache.target = 0.5;
+                    that.target = 0.5;
+                } else {
+                    that.playlist[1].pause();
+                    that.cache.loveMode = false;
                     that.cache.target = 1;
                     that.target = 1;
                 }
@@ -440,6 +472,15 @@ function Drift(canvas) {
 		/* Static context stuff. */
 		this.context.fontFamily = "Bit";
         
+    }
+    
+    this.resetGameMode = function() {
+        this.playlist[0].pause();
+        this.cache.lsdMode = false;
+        this.playList[1].pause();
+        this.cache.loveMode = false;
+        this.cache.target = 1;
+        this.target = 1;
     }
     
     /** Go to the menu. */
@@ -495,6 +536,8 @@ function Drift(canvas) {
         this.context.textBaseline = "bottom";
         this.context.textAlign = "right";
         this.context.fillText("!", this.canvas.width-10, this.canvas.height-10);
+        this.context.textAlign = "left";
+        this.context.fillText("!", 10, this.canvas.height - 10);
 	}
 	
 	/** Leave a text message hanging on screen for a set amount of time. */
@@ -631,7 +674,13 @@ function Drift(canvas) {
 
         /* Autodraw the entities. */
 		for (var name in this.entities) if (this.entities[name].autorender) this.entities[name].render(this.context);
-        this.entities.boat.renderParticles(this.context);
+        
+        if (this.cache.loveMode) {
+            this.entities.boat.renderParticles(this.context, this.cache.heartImage);
+        } else {
+            this.entities.boat.renderParticles(this.context);
+        }
+        
         for (var i = 0; i < 10; i++) {
             if (this.entities["laser"+i].active) {
                 this.entities["laser"+i].render(this.context);
@@ -686,9 +735,14 @@ function Drift(canvas) {
 
         }
 		
-        if (this.cache.colors) {
+        if (this.cache.lsdMode) {
             this.context.globalAlpha = 0.1;
             this.context.fillStyle = "hsl(" + (Date.now() / 10)  % 360 + ", 50%, 50%)";
+            this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.context.globalAlpha = 1;
+        } else if (this.cache.loveMode) {
+            this.context.globalAlpha = 0.2;
+            this.context.fillStyle = "rgb(255, 31, 114)";
             this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
             this.context.globalAlpha = 1;
         } else {
