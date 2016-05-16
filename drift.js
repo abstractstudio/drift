@@ -537,7 +537,10 @@ function Drift(canvas) {
         	this.entities.boat.sideParticleSystem.properties.startRadius = 6;
         }
         for (var i = 0; i < this.difficulty; i++) this.entities["obstacle"+i].respawn();
-        for (var i = 0; i < 10; i++) this.entities["laser"+i] = new Projectile(this, this.entities.boat.pos.x, this.entities.boat.pos.y);
+        for (var i = 0; i < 10; i++) {
+        	this.entities["laser"+i].pos = this.entities.boat.pos.copy();
+        	this.entities["laser"+i].active = false;
+        }
         this.state = STATE.PLAY;
         this.target = this.cache.target || 1;
         this.score = 0;
