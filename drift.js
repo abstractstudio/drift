@@ -542,7 +542,10 @@ function Drift(canvas) {
         
         /* Scoreboard code. */
         if (this.entities.boat.lastShootTime == 0) {
-            
+            if (this.cache.loveMode) var mode = "love";
+            else if (this.cache.lsdMode) var mode = "speed";
+            else var mode = "normal";
+            //updateScoreboard(mode, getScoreboards, "test", this.score);
         }
         
         this.state = STATE.DEAD;

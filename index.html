@@ -85,8 +85,8 @@
 						var element = document.getElementById("scoreboard");
 						var html = "";
 						for (var i = 0; i < scoreboard.length; i++) {
-							html += "<td class=\"right\">" + scoreboard[i][0] + "</td>";
-							html += "<td>" + scoreboard[i][1] + "</td>";
+							html += "<tr><td class=\"right\">" + scoreboard[i][0] + "</td>";
+							html += "<td>" + scoreboard[i][1] + "</td></tr>";
 						}
 						element.innerHTML = html;
 					}
