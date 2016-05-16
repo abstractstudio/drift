@@ -149,6 +149,10 @@ function Boat(engine) {
             /* Fire lasers. */
             for (var i = 0; i < 10; i++) {
                 if (keyboard[76] && !this.engine.entities["laser"+i].active && Date.now() - this.lastShootTime > this.cooldown) { // L
+                	var blaster = this.engine.manager.$("blaster");
+                	blaster.volume = 0.3;
+                	blaster.currentTime = 0.8;
+                	blaster.play();
                     this.engine.entities["laser"+i].active = true;
                     this.engine.entities["laser"+i].pos = new Vector(this.pos.x, this.pos.y);
                     this.engine.entities["laser"+i].rot = this.rot + Math.PI/2;
@@ -414,6 +418,7 @@ function Drift(canvas) {
         this.manager.queue("heart", RESOURCE.IMAGE, "assets/heart.png");
         this.manager.queue("running", RESOURCE.AUDIO, "assets/running.m4a");
         this.manager.queue("romance", RESOURCE.AUDIO, "assets/romance.mp3");
+        this.manager.queue("blaster", RESOURCE.AUDIO, "assets/blaster.m4a");
         this.manager.load(function() {
             
             /* Alot resources. */
@@ -527,7 +532,12 @@ function Drift(canvas) {
     /** Replay. */
     this.replay = function() {
         this.entities.boat.reset();
+        if (this.cache.loveMode) {
+        	this.entities.boat.particleSystem.properties.startRadius = 6;
+        	this.entities.boat.sideParticleSystem.properties.startRadius = 6;
+        }
         for (var i = 0; i < this.difficulty; i++) this.entities["obstacle"+i].respawn();
+        for (var i = 0; i < 10; i++) this.entities["laser"+i] = new Projectile(this, this.entities.boat.pos.x, this.entities.boat.pos.y);
         this.state = STATE.PLAY;
         this.target = this.cache.target || 1;
         this.score = 0;
