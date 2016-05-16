@@ -4,6 +4,24 @@ var STATE = {LOAD: 0, MENU: 1, PLAY: 2, STOP: 3, DEAD: 4};
 /** Bound a number to a limit. */
 function bound(x, b) { return Math.min(Math.max(x, b[0]), b[1]); }
 
+function updateScoreboard(mode, callback, name, score) {
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function() {
+        if (request.readyState == 4 && request.status == 200) {
+            var scoreboard = JSON.parse(request.responseText);
+            callback(scoreboard);
+        }
+    };
+    request.open("POST", "scoreboard.php", true);
+    request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    
+    var data = "mode=normal";
+    if (name && score) data += "&name=" + name + "&score=" + score;
+    console.log(data);
+
+    request.send(data);
+}
+
 /** Boat sprite. */
 function Boat(engine) {
     
