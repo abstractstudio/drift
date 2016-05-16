@@ -136,7 +136,6 @@ function Boat(engine) {
                     this.engine.entities["laser"+i].rot = this.rot + Math.PI/2;
                     this.engine.entities["laser"+i].speed = 20;
                     this.lastShootTime = Date.now();
-                    console.log("shot " + this.rot);
                 }
                 this.engine.entities["laser"+i].update(delta);
             }
@@ -422,7 +421,7 @@ function Drift(canvas) {
         
         /* Register click events. */
         document.addEventListener("mousedown", function(e) {
-            if (that.state == STATE.PLAY) return;
+            if (that.state == STATE.PLAY || this.state == STATE.STOP) return;
             var x = that.mouse.x - that.canvas.offsetLeft + document.body.scrollLeft;
             var y = that.mouse.y - that.canvas.offsetTop + document.body.scrollTop;
             
@@ -527,6 +526,12 @@ function Drift(canvas) {
     
     /** Once a round is over. */
     this.dead = function() {
+        
+        /* Scoreboard code. */
+        if (this.entities.boat.lastShootTime == 0) {
+            
+        }
+        
         this.state = STATE.DEAD;
         this.cache.target = this.target;
         this.target = 0;

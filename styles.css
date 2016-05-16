@@ -34,7 +34,7 @@ a {
 }
 
 #description { 
-    transition: transform 1s ease-in-out;
+    transition: transform 1s ease-out;
     position: absolute; 
     top: 100%; 
     width: 100%; 
