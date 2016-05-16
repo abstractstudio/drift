@@ -32,6 +32,12 @@
         
         <!-- The description of drift. -->
         <div id="description">
+        	<p>
+        		<b>Scoreboard</b>
+				<table id="scoreboard">
+					
+				</table>
+        	</p>
             <p>
                 <b>About</b><br>
                 Chincoteague Drift is a skill-based boating game where you must use the slow, 
@@ -44,21 +50,17 @@
             </p>
             <p>
                 <b>Features</b><br>
-                Realistic drift physics<br>
-                Particle effects<br>
-                Boost balance<br>
-                Skill detection<br>
-                Impossibility prevention<br>
-                Better pause<br>
-                Firefox support<br>
-                Better webpage layout<br>
-                Running in the 90's<br>
-                I love you<br>
+                Realistic drift physics&nbsp;&bull;
+                Particle effects&nbsp;&bull;
+                Boost balance&nbsp;&bull;
+                Skill detection&nbsp;&bull;
+                Impossibility prevention&nbsp;&bull;
+                Better pause&nbsp;&bull;
+                Firefox support&nbsp;&bull;
+                Better webpage layout&nbsp;&bull;
+                Running in the 90's&nbsp;&bull;
+                I love you&nbsp;&bull;
                 Pew pew<br>
-            </p>
-            <p>
-                <b>Upcoming</b><br>
-                Global scoreboard<br>
             </p>
             <p>
                 <b>Credits</b><br>
@@ -73,6 +75,30 @@
             &darr;
         </div>
         
+        <!-- Scoreboard. -->
+		<script type="text/javascript">
+			function getScoreboards() {
+				var request = new XMLHttpRequest();
+				request.onreadystatechange = function() {
+					if (request.readyState == 4 && request.status == 200) {
+						var scoreboard = JSON.parse(request.responseText);
+						var element = document.getElementById("scoreboard");
+						var html = "";
+						for (var i = 0; i < scoreboard.length; i++) {
+							html += "<td class=\"right\">" + scoreboard[i][0] + "</td>";
+							html += "<td>" + scoreboard[i][1] + "</td>";
+						}
+						element.innerHTML = html;
+					}
+				};
+				request.open("GET", "scoreboard.php", true);
+				request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				var data = "mode=normal";
+				request.send(data);
+			}
+			getScoreboards();
+		</script>
+        
         <!-- Pretty formatting. -->
         <script type="text/javascript">
             var hidden = false;
@@ -86,6 +112,7 @@
             }
             
             function showDescription() {
+            	getScoreboards();
                 hidden = false;
                 description.style.transform = "translate(0, -100%)";
                 button.style.transform = "rotate(180deg)";
@@ -98,7 +125,7 @@
             
             document.addEventListener("mousewheel", function(e) {
                 if (e.wheelDelta > 0) hideDescription();
-                else showDescription();
+                else if (e.wheelDelta < 0) showDescription();
             });
         </script>        
         
