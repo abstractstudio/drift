@@ -4,6 +4,34 @@ var STATE = {LOAD: 0, MENU: 1, PLAY: 2, STOP: 3, DEAD: 4};
 /** Bound a number to a limit. */
 function bound(x, b) { return Math.min(Math.max(x, b[0]), b[1]); }
 
+
+/** Scoreboard code. */
+var downloadedScoreboards;
+function downloadScoreboards(callback) {
+    var ready = {"normal": false, "speed": false, "love": false};
+    for (var mode in ready) {
+        var request = new XMLHttpRequest();
+        request.mode = mode;
+		request.onreadystatechange = function() {
+			if (request.readyState == 4 && request.status == 200) {
+				ready[this.mode] = JSON.parse(request.responseText);
+                for (var mode in ready) if (ready[mode] === false) return;
+                callback(ready);
+            }
+		};
+		request.open("POST", "scoreboard.php", true);
+		request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		var data = "mode=" + mode;
+		request.send(data);
+    }
+}
+
+downloadScoreboards(function(scoreboards) {
+    downloadedScoreboards = scoreboards;
+    console.log(scoreboards);
+});
+
+
 /** Boat sprite. */
 function Boat(engine) {
     
