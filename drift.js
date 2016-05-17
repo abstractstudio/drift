@@ -16,7 +16,8 @@ var downloadScoreboards = function(callback) {
 	    if (this.readyState == 4 && this.status == 200) {
                 ready[this.mode] = JSON.parse(this.responseText);
                 for (var m in ready) if (!ready[m]) return;
-                callback(ready);
+                downloadedScoreboards = ready;
+                if (callback) callback(ready);
             }
         };
         var url = "scoreboard.php?mode=" + mode;
@@ -25,12 +26,10 @@ var downloadScoreboards = function(callback) {
     }
 }
 
-downloadScoreboards(function(scoreboards) {
-    downloadedScoreboards = scoreboards;
-});
+downloadScoreboards();
 
 
-var updateScoreboards = function() {
+var updateScoreboards = function(hook) {
     downloadScoreboards(function(scoreboards) {
         var modes = ["normal", "speed", "love"];
         for (var i = 0; i < modes.length; i++) {
@@ -39,7 +38,7 @@ var updateScoreboards = function() {
             element.style.opacity = 0;
             html = "";
             for (var j = 0; j < Math.min(scoreboards[mode].length, 10); j++) {
-                html += "<tr><td class='right'>" + scoreboards[mode][j][0] + "</td>";
+                html += "<tr><td>" + scoreboards[mode][j][0].substr(0, 12) + "</td>";
                 html += "<td>" + scoreboards[mode][j][1] + "</td></tr>";
             }
             if (scoreboards[mode].length == 0) {
@@ -52,6 +51,7 @@ var updateScoreboards = function() {
                     this.element.innerHTML = this.html;
                     this.element.style.opacity = 1;
                 }
+                if (hook) hook();
             }
             setTimeout(callback.call.bind(callback), 500);
             delete callback;
@@ -482,7 +482,7 @@ function Drift(canvas) {
         
         /* Register click events. */
         document.addEventListener("mousedown", function(e) {
-            if (that.state == STATE.PLAY || this.state == STATE.STOP) return;
+            if (that.state == STATE.PLAY || that.state == STATE.STOP) return;
             var x = that.mouse.x - that.canvas.offsetLeft + document.body.scrollLeft;
             var y = that.mouse.y - that.canvas.offsetTop + document.body.scrollTop;
             
@@ -596,8 +596,13 @@ function Drift(canvas) {
     /** Once a round is over. */
     this.dead = function() {
         
+        var allowScoreboard = this.state != STATE.DEAD;
+        this.state = STATE.DEAD;
+        this.cache.target = this.target;
+        this.target = 0;
+
         /* Scoreboard code. */
-        if (this.entities.boat.lastShootTime == 0) {
+        if (allowScoreboard && this.entities.boat.lastShootTime == 0) {
             if (this.cache.loveMode) var mode = "love";
             else if (this.cache.lsdMode) var mode = "speed";
             else var mode = "normal";
@@ -607,32 +612,29 @@ function Drift(canvas) {
             if (local.length < 10 || this.score > local[local.length-1][1]) {
                 showDescription();
                 var i = Math.max(local.length-1, 0);
-                while (i > 0 && local[i][1] < this.score) i++;
+                while (i > 0 && local[i-1][1] < this.score) i--;
                 var scoreboard = document.getElementById("scoreboard-" + mode);
 
                 var newRow = document.createElement("tr");                
                 var entryCell = document.createElement("td");
                 var entry = document.createElement("input");
                 var scoreCell = document.createElement("td");
+                entryCell.appendChild(entry);
                 newRow.appendChild(entryCell);
                 newRow.appendChild(scoreCell);
-                scoreCell.innerHTML = this.score;
-                entry.type = "text"; entry.style.width = "100%"; 
-                entry.onkeydown = function(e) { if (e.keyCode == 13) updateScoreboard(mode, entry.value, this.score); }
+                scoreCell.innerHTML = Math.round(this.score * 100) / 100;
+                entry.type = "text"; 
+                entry.style.width = "100%";
+                var score = this.score; 
+                entry.onkeydown = function(e) { if (e.keyCode == 13) {
+                    updateScoreboard(mode, entry.value, score); 
+                }};
 
                 var row = scoreboard.getElementsByTagName("tr")[i];
-                console.log(row, scoreboard);
-
-                //replaceChild(row, newRow);
-              
-                //updateScoreboard(mode, getScoreboards, "test", this.score);
+                row.parentNode.insertBefore(newRow, row);
+                entry.focus();
             }
-
         }
-        
-        this.state = STATE.DEAD;
-        this.cache.target = this.target;
-        this.target = 0;
     }
 	
 	/** Display. */
@@ -876,15 +878,14 @@ function Drift(canvas) {
 		var request = new XMLHttpRequest();
 		request.onreadystatechange = function() {
 			if (request.readyState == 4 && request.status == 200) {
-				var scoreboard = JSON.parse(request.responseText);
+				//var scoreboard = JSON.parse(request.responseText);
                                 updateScoreboards();
 			}
 		};
 		request.open("POST", "scoreboard.php", true);
 		request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		var data = "mode=normal";
-		if (name && score) data += "&name=" + name + "&score=" + score;
-		request.send(data);
+		var data = "mode=" + mode +  "&name=" + name + "&score=" + score;
+                request.send(data);
 	}
     
 }

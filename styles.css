@@ -45,6 +45,15 @@ table td {
 	line-height: 16px;
 }
 
+table td:first-of-type {
+    text-align: right;
+    width: 80%;
+}
+
+table td:last-of-type {
+    width: 20%;
+}
+
 .right {
 	text-align: right;
 }
