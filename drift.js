@@ -7,29 +7,50 @@ function bound(x, b) { return Math.min(Math.max(x, b[0]), b[1]); }
 
 /** Scoreboard code. */
 var downloadedScoreboards;
-function downloadScoreboards(callback) {
+var downloadScoreboards = function(callback) {
     var ready = {"normal": false, "speed": false, "love": false};
     for (var mode in ready) {
         var request = new XMLHttpRequest();
         request.mode = mode;
-		request.onreadystatechange = function() {
-			if (request.readyState == 4 && request.status == 200) {
-				ready[this.mode] = JSON.parse(request.responseText);
-                for (var mode in ready) if (ready[mode] === false) return;
+        request.onreadystatechange = function() {
+	    if (this.readyState == 4 && this.status == 200) {
+                ready[this.mode] = JSON.parse(this.responseText);
+                for (var m in ready) if (!ready[m]) return;
                 callback(ready);
             }
-		};
-		request.open("POST", "scoreboard.php", true);
-		request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		var data = "mode=" + mode;
-		request.send(data);
+        };
+        var url = "scoreboard.php?mode=" + mode;
+        request.open("GET", url, true);
+        request.send();
     }
 }
 
 downloadScoreboards(function(scoreboards) {
     downloadedScoreboards = scoreboards;
-    console.log(scoreboards);
 });
+
+
+var updateScoreboards = function() {
+    var element = document.getElementById("scoreboard");
+    element.style.opacity = 0;
+    downloadScoreboards(function(scoreboards) {
+        var html = "";
+        for (var i = 0; i < 10; i++) {
+            html += "<tr>";
+            for (var j = 0; j < 3; j++) {
+                var mode = ["normal", "speed", "love"][j];
+                if (i < scoreboards[mode].length) {
+                    html += "<td class=\"right\">" + scoreboards[mode][i][0] + "</td>";
+                    html += "<td>" + scoreboards[mode][i][1] + "</td>";
+                } else {
+                    html += "<td>&nbsp;</td><td>&nbsp;</td>";
+                }
+            }
+            html += "</tr>";
+        }
+        setTimeout(function() { element.innerHTML = html; element.style.opacity = 1; }, 500);
+    });
+}
 
 
 /** Boat sprite. */
@@ -573,7 +594,24 @@ function Drift(canvas) {
             if (this.cache.loveMode) var mode = "love";
             else if (this.cache.lsdMode) var mode = "speed";
             else var mode = "normal";
-            //updateScoreboard(mode, getScoreboards, "test", this.score);
+            var modes = ["normal", "speed", "love"];
+            console.log(mode);
+            var local = downloadedScoreboards[mode];
+            if (local.length < 10 || this.score > local[local.length-1][1]) {
+                showDescription();
+                var i = Math.max(local.length-1, 0);
+                while (i > 0 && local[i][1] < this.score) i++;
+                var scoreboard = document.getElementById("scoreboard");
+                var entry = document.createElement("input");
+                entry.type = "text"; entry.style.width = "100%"; entry.onclick = function() { updateScoreboard(mode, entry.value, this.score); }
+                var row = scoreboard.getElementsByTagName("tr")[i];
+                var existing = row.getElementsByClassName("right")[modes.indexOf(mode)];
+                console.log(row, existing);
+                row.replaceChild(existing, entry);
+                
+                //updateScoreboard(mode, getScoreboards, "test", this.score);
+            }
+
         }
         
         this.state = STATE.DEAD;
@@ -818,12 +856,12 @@ function Drift(canvas) {
 		if (this.showDisplay) this.display();
 	}
 	
-	function updateScoreboard(mode, callback, name, score) {
+	function updateScoreboard(mode, name, score) {
 		var request = new XMLHttpRequest();
 		request.onreadystatechange = function() {
 			if (request.readyState == 4 && request.status == 200) {
 				var scoreboard = JSON.parse(request.responseText);
-				callback(scoreboard);
+                                updateScoreboards();
 			}
 		};
 		request.open("POST", "scoreboard.php", true);

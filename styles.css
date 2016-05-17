@@ -36,7 +36,8 @@ a {
 table {
 	table-layout: fixed;
 	margin: auto;
-	width: 40%;
+        width: 100%;
+    transition: opacity 0.5s ease-in-out;
 }
 
 table td {
