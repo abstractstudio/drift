@@ -31,24 +31,31 @@ downloadScoreboards(function(scoreboards) {
 
 
 var updateScoreboards = function() {
-    var element = document.getElementById("scoreboard");
-    element.style.opacity = 0;
     downloadScoreboards(function(scoreboards) {
-        var html = "";
-        for (var i = 0; i < 10; i++) {
-            html += "<tr>";
-            for (var j = 0; j < 3; j++) {
-                var mode = ["normal", "speed", "love"][j];
-                if (i < scoreboards[mode].length) {
-                    html += "<td class=\"right\">" + scoreboards[mode][i][0] + "</td>";
-                    html += "<td>" + scoreboards[mode][i][1] + "</td>";
-                } else {
-                    html += "<td>&nbsp;</td><td>&nbsp;</td>";
+        var modes = ["normal", "speed", "love"];
+        for (var i = 0; i < modes.length; i++) {
+            var mode = modes[i];
+            var element = document.getElementById("scoreboard-" + mode);
+            element.style.opacity = 0;
+            html = "";
+            for (var j = 0; j < Math.min(scoreboards[mode].length, 10); j++) {
+                html += "<tr><td class='right'>" + scoreboards[mode][j][0] + "</td>";
+                html += "<td>" + scoreboards[mode][j][1] + "</td></tr>";
+            }
+            if (scoreboards[mode].length == 0) {
+                html += "<tr><td></td><td></td></tr>";
+            }
+            var callback = new function() {
+                this.element = element;
+                this.html = html;
+                this.call = function() {
+                    this.element.innerHTML = this.html;
+                    this.element.style.opacity = 1;
                 }
             }
-            html += "</tr>";
-        }
-        setTimeout(function() { element.innerHTML = html; element.style.opacity = 1; }, 500);
+            setTimeout(callback.call.bind(callback), 500);
+            delete callback;
+        } 
     });
 }
 
@@ -601,14 +608,23 @@ function Drift(canvas) {
                 showDescription();
                 var i = Math.max(local.length-1, 0);
                 while (i > 0 && local[i][1] < this.score) i++;
-                var scoreboard = document.getElementById("scoreboard");
+                var scoreboard = document.getElementById("scoreboard-" + mode);
+
+                var newRow = document.createElement("tr");                
+                var entryCell = document.createElement("td");
                 var entry = document.createElement("input");
-                entry.type = "text"; entry.style.width = "100%"; entry.onclick = function() { updateScoreboard(mode, entry.value, this.score); }
+                var scoreCell = document.createElement("td");
+                newRow.appendChild(entryCell);
+                newRow.appendChild(scoreCell);
+                scoreCell.innerHTML = this.score;
+                entry.type = "text"; entry.style.width = "100%"; 
+                entry.onkeydown = function(e) { if (e.keyCode == 13) updateScoreboard(mode, entry.value, this.score); }
+
                 var row = scoreboard.getElementsByTagName("tr")[i];
-                var existing = row.getElementsByClassName("right")[modes.indexOf(mode)];
-                console.log(row, existing);
-                row.replaceChild(existing, entry);
-                
+                console.log(row, scoreboard);
+
+                //replaceChild(row, newRow);
+              
                 //updateScoreboard(mode, getScoreboards, "test", this.score);
             }
 

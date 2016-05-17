@@ -34,10 +34,11 @@ a {
 }
 
 table {
-	table-layout: fixed;
-	margin: auto;
-        width: 100%;
+    table-layout: fixed;
+    width: 33%;
     transition: opacity 0.5s ease-in-out;
+    float: left;
+    margin-bottom: 1em;
 }
 
 table td {
