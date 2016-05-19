@@ -38,7 +38,7 @@ var updateScoreboards = function(hook) {
             element.style.opacity = 0;
             html = "";
             for (var j = 0; j < Math.min(scoreboards[mode].length, 10); j++) {
-                html += "<tr><td>" + scoreboards[mode][j][0].substr(0, 12) + "</td>";
+                html += "<tr><td>" + scoreboards[mode][j][0].substr(0, 18) + "</td>";
                 html += "<td>" + scoreboards[mode][j][1] + "</td></tr>";
             }
             if (scoreboards[mode].length == 0) {
@@ -115,7 +115,7 @@ function Boat(engine) {
             speedVar: 0.05, 
             angle: Math.PI/2, 
             angleVar: 7.5 * Math.PI/180,  
-            life: 300, 
+            life: 200, 
             lifeVar: 50, 
             startRadius: 2.5, 
             startRadiusVar: 0.25, 
@@ -126,7 +126,7 @@ function Boat(engine) {
             endColor: [175, 201, 255, 64]
             
         });
-        this.particleSystem.totalParticles = 64;
+        this.particleSystem.totalParticles = 24;
         this.particleSystem.emissionRate = 0.213;
         this.particleSystem.init();
         
@@ -227,7 +227,7 @@ function Boat(engine) {
     
     this.renderParticles = function(context, image) {
         this.particleSystem.properties.image = image;
-        this.sideParticleSystem.properties.image = image;
+        //this.sideParticleSystem.properties.image = image;
         this.particleSystem.render(context);
         //this.sideParticleSystem.render(context);
     }
@@ -607,7 +607,6 @@ function Drift(canvas) {
             else if (this.cache.lsdMode) var mode = "speed";
             else var mode = "normal";
             var modes = ["normal", "speed", "love"];
-            console.log(mode);
             var local = downloadedScoreboards[mode];
             if (local.length < 10 || this.score > local[local.length-1][1]) {
                 showDescription();
