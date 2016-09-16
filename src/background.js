@@ -1,2 +1,2 @@
-goog.require("asset.Animation");
+goog.require("engine.Animation");
 goog.provide("drift.Background");

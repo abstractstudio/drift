@@ -1,3 +1,3 @@
-goog.require("asset.Asset");
-goog.require("asset.Animation");
+goog.require("engine.Asset");
+goog.require("engine.Animation");
 goog.provide("drift.Sprite");
