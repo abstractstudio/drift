@@ -1,5 +1,13 @@
+goog.require("engine.Engine");
+goog.require("drift.Boat");
+goog.require("drift.Obstacle");
+goog.require("drift.Projectile");
+goog.require("drift.Background");
+goog.provide("drift.Drift");
+
+
 /* Global constants. */
-var STATE = {LOAD: 0, MENU: 1, PLAY: 2, STOP: 3, DEAD: 4};
+const STATE = {LOAD: 0, MENU: 1, PLAY: 2, STOP: 3, DEAD: 4};
 
 /** Bound a number to a limit. */
 function bound(x, b) { return Math.min(Math.max(x, b[0]), b[1]); }
@@ -59,384 +67,44 @@ var updateScoreboards = function(hook) {
     });
 }
 
-
-/** Boat sprite. */
-function Boat(engine) {
-    
-    /* Super constructor. */
-    Sprite.call(this, engine, 300, 550, 16*3, 28*3, 8*3, 10*3);
-    
-    /* Movement rate. */
-    this.rate = 1;
-    
-    /* Movement. */
-    this.rot = 0;
-    this.mov = {xv: 0, xa: 0.03, rv: 0.01};
-    this.mov.xb = [50, 550];
-    this.mov.vb = [-1.5, 1.5];
-    
-    /* Rotational bounds. */
-    this.mov.rb = [-Math.PI/3, Math.PI/3];
-
-    /* Boost. */
-    this.temp = {};
-    this.temp.boost = 1;
-    
-    /* Auto. */
-    this.autoupdate = true;
-    this.autorender = false;
-    
-    /* Shooting. */
-    this.cooldown = 200;
-    this.lastShootTime = 0;
-    
-    /* Water particle system. */
-    this.particleSystem = new ParticleSystem(this.pos.x, this.pos.y);
-    this.sideParticleSystem = new ParticleSystem(this.pos.x, this.pos.y);
-    this.particleYOffset = this.width/2;
-    this.particleImage = null;
-    
-    /* Animation. */
-    this.animation = "boat";
-    this.addAnimation(new Animation("boat", [0, 1, 2]));
-    this.getAnimation().index = 1;
-    
-    /* Reset the boat to it's original position. */
-    this.reset = function() {
-        this.rot = 0;
-        this.pos.x = 300;
-        this.pos.y = 550;
-        this.mov.xv = 0;
-        
-        this.particleSystem = new ParticleSystem(this.pos.x, this.pos.y + this.particleYOffset);
-        this.particleSystem.setProperties({
-            posVar: new Vector(this.width/2 - 4, 0), 
-            speed: 0.2, 
-            speedVar: 0.05, 
-            angle: Math.PI/2, 
-            angleVar: 7.5 * Math.PI/180,  
-            life: 200, 
-            lifeVar: 50, 
-            startRadius: 2.5, 
-            startRadiusVar: 0.25, 
-            endRadius: 1.0, 
-            endRadiusVar: 0.2, 
-            startColor: [101, 150, 187, 255], 
-            startColorVar: [10, 5, 0, 0],
-            endColor: [175, 201, 255, 64]
-            
-        });
-        this.particleSystem.totalParticles = 24;
-        this.particleSystem.emissionRate = 0.213;
-        this.particleSystem.init();
-        
-        this.sideParticleSystem = new ParticleSystem(this.pos.x, this.pos.y + this.particleYOffset);
-        this.sideParticleSystem.setProperties({
-            posVar: new Vector(this.width/2 - 4, 0), 
-            speed: 0.2, 
-            speedVar: 0.05, 
-            angle: Math.PI/2, 
-            angleVar: 10.0 * Math.PI/180,  
-            life: 500, 
-            lifeVar: 50, 
-            startRadius: 2.5, 
-            startRadiusVar: 0.25, 
-            endRadius: 1.0, 
-            endRadiusVar: 0.2, 
-            startColor: [101, 150, 187, 255], 
-            startColorVar: [10, 5, 0, 0],
-            endColor: [175, 201, 255, 64]
-            
-        });
-        this.sideParticleSystem.totalParticles = 64;
-        this.sideParticleSystem.emissionRate = 0.128;
-        this.sideParticleSystem.init();
-    }
-    
-    /** Update the boat. */
-    this.update = function(delta) {
-        
-        /* Only allow the boat to move if playing. */
-        if (this.engine.state == STATE.PLAY) {
-
-            /* Left and right input. */
-            var keyboard = this.engine.keyboard;
-            var left = keyboard[KEY.LEFT] || keyboard[KEY.A];
-            var right = keyboard[KEY.RIGHT] || keyboard[KEY.D];
-
-            /* Only left. */
-            if (left && !right) { 
-                this.turn(+delta);
-                this.getAnimation().index = 0;
-
-            /* Only right. */
-            } else if (right && !left) {
-                this.turn(-delta);
-                this.getAnimation().index = 2; 
-
-            /* Neither or both. */
-            } else { this.getAnimation().index = 1; }
-
-            /* Move. */
-            this.move(delta);
-            
-            /* Update particle systems. */
-            var boost = this.temp.boost > 0 ? 0.75 : 0.5;
-            this.updateParticles(delta * bound(this.engine.rate, [0, 1.5]) * boost);
-            
-            /* Fire lasers. */
-            for (var i = 0; i < 10; i++) {
-                if (keyboard[76] && !this.engine.entities["laser"+i].active && Date.now() - this.lastShootTime > this.cooldown) { // L
-                	var blaster = this.engine.manager.$("blaster");
-                	blaster.volume = 0.3;
-                	blaster.currentTime = 0.8;
-                	blaster.play();
-                    this.engine.entities["laser"+i].active = true;
-                    this.engine.entities["laser"+i].pos = new Vector(this.pos.x, this.pos.y);
-                    this.engine.entities["laser"+i].rot = this.rot + Math.PI/2;
-                    this.engine.entities["laser"+i].speed = 20;
-                    this.lastShootTime = Date.now();
-                }
-                this.engine.entities["laser"+i].update(delta);
-            }
-        }
-
-        this.temp = {};
-        
-    }
-    
-    this.updateParticles = function(delta) {
-        this.particleSystem.properties.pos.x = this.pos.x + this.particleYOffset*Math.sin(this.rot);
-        this.particleSystem.properties.posVar.x = (this.width/2 - 2) * Math.cos(this.rot);
-        this.particleSystem.properties.pos.y = this.pos.y + this.particleYOffset*Math.cos(this.rot);
-        this.particleSystem.properties.posVar.y = (this.width/2 - 2) * Math.sin(this.rot);
-        this.particleSystem.properties.angle = Math.PI/2 - this.rot;
-        //this.particleSystem.properties.startRadius = 2.5 + Math.abs(this.rot)*1.5;
-        this.particleSystem.update(delta);
-
-        /*
-        this.sideParticleSystem.properties.pos.x = this.pos.x + this.particleYOffset*Math.sin(this.rot);
-        this.sideParticleSystem.properties.posVar.x = (this.width/2 - 8) * Math.cos(this.rot);
-        this.sideParticleSystem.properties.pos.y = this.pos.y - this.particleYOffset*Math.cos(this.rot);
-        this.sideParticleSystem.properties.posVar.y = (this.width/2 - 8) * Math.sin(this.rot);
-        this.sideParticleSystem.properties.angle = Math.PI/2 + this.rot;
-        //this.sideParticleSystem.properties.startRadius = 2.5 + Math.abs(this.rot)*2.0;
-        this.sideParticleSystem.update(delta);
-        */
-    }
-    
-    this.renderParticles = function(context, image) {
-        this.particleSystem.properties.image = image;
-        //this.sideParticleSystem.properties.image = image;
-        this.particleSystem.render(context);
-        //this.sideParticleSystem.render(context);
-    }
-    
-    /** Turn the boat. */
-    this.turn = function(delta) {
-        var rot = this.mov.rv * this.rate * this.engine.rate * delta/16;
-        this.rot = bound(this.rot+rot, this.mov.rb);
-    }
-    
-    /** Move the boat. */
-    this.move = function(delta) {
-        this.mov.xv = bound(this.mov.xv-Math.sin(this.rot)*this.mov.xa, this.mov.vb);
-        this.mov.xv -= Math.sin(this.rot) * (this.temp.boost || 0);
-        var mov = this.mov.xv * this.rate * this.engine.rate * delta/16;
-        this.pos.x = bound(this.pos.x+mov, this.mov.xb);
-        if (this.mov.xb.indexOf(this.pos.x) > -1) this.mov.xv = 0;
-    }
-	
-	this.bbox = function() {
-		var tl = this.topLeft();
-		return [tl.x, tl.y, this.width, this.height - 4*3];
-	}
-}
-
-function Projectile(engine, x, y, angle, speed) {
-    
-    /* Super constructor. */
-    Sprite.call(this, engine, x || 0, y || 0, 290/8, 74/4);
-    
-    this.active = false;
-    
-    /* Movement. */
-    this.rate = 1;
-    this.speed = speed || 0;
-    this.rot = angle || 0;
-    
-    /* Auto. */
-    this.autoupdate = false;
-    this.autorender = false;
-    
-    this.update = function(delta) {
-        if (!this.active) return;
-        
-        this.pos.x += this.speed * this.rate * delta/16.0 * Math.cos(this.rot);
-        this.pos.y += this.speed * this.rate * delta/16.0 * -Math.sin(this.rot);
-        
-        // Check if off-screen
-        if (this.pos.x + this.width < 0 || this.pos.y + this.height < 0 || this.pos.x - this.width > 600 || this.pos.y - this.height > 690) {
-            this.active = false;
-        }
-    }
-
-    this.bbox = function() {
-        var tl = this.topLeft();
-		return [tl.x, tl.y, this.width, this.height];
-    }
-    
-}
-
-/** Generic obstacle. */
-function Obstacle(engine) {
-		
-	/* Super constructor. */
-	Sprite.call(this, engine);
-	
-	/* Movement. */
-	this.rate = 1;
-	this.rad = 0;
-	this.rot = 0;
-	this.mov = {yv: 2};
-    
-    this.detectCollision = true;
-	
-	/* Auto. */
-	this.autoupdate = true;
-	this.autorender = true;
-
-	/* Animation. */
-	this.animation = "obstacle";
-	this.addAnimation(new Animation("obstacle", [0, 1, 2, 3]));
-	
-	/** Update the obstacle. */
-	this.update = function(delta) {
-		if (this.engine.state != STATE.PLAY) return;
-		this.pos.y += this.mov.yv * Obstacle.rate * this.engine.rate;
-        if (this.pos.y > this.engine.canvas.height + this.rad && delta != 0) this.respawn();
-	}
-	
-	/** Respawn the obstacle. */
-	this.respawn = function() {
-		
-		/* Randomize the position and obstacle type. */
-		this.randomize();
-		
-        for (var i = 0; i < this.engine.difficulty; i++) {
-						
-			/* Get the obstacle. */
-			var obstacle = this.engine.entities["obstacle" + i];
-			if (!obstacle) continue;
-						
-			/* Skip if comparing to self. */
-            if (obstacle === this) continue;
-						
-            /* Fail and send to bottom if colliding with another or too close. */
-            if (Vector.distance(this.pos, obstacle.pos) < this.rad + obstacle.rad + this.engine.entities.boat.height*Math.sqrt(this.engine.rate)*1.2) {
-                this.pos.y = this.engine.canvas.height + this.rad + 1;
-				break;
-            }
-			
-        }
-		
-	}
-	
-	/** Randomize the obstacle. */
-	this.randomize = function() {
-        this.rad = Math.random()*10 + 10;
-        this.cpos.x = this.rad;
-        this.cpos.y = this.rad;
-        this.width = this.height = this.rad*2;
-        this.rot = Math.random() * 2 * Math.PI;
-        this.pos.x = Math.random() * (this.engine.canvas.width-50) + 25;
-        this.pos.y = -Math.random() * this.engine.canvas.height - this.rad;
-        this.getAnimation().index = Math.floor(Math.random() * 5);
-	    this.rad -= 2;
-        this.detectCollision = true;
-        this.autoupdate = true;
-        this.autorender = true;
-	}
-	
-	/* Randomize on initialization. */
-	this.respawn();
-
-}
-
-/* Static rate. */
-Obstacle.rate = 1;
-
-/** Scrolling background image. */
-function Background(engine) {
-    
-    /* Engine. */
-    this.engine = engine;
-    
-    /* Image and other data. */
-    this.image;
-    this.ratio = 6;
-    this.rate = 1 * 2;
-    this.scroll = 0;
-    
-    /* Auto update and render. */
-    this.autoupdate = true;
-    this.autorender = false;
-    
-    /** Update the background image. */
-    this.update = function(delta) {
-        if (this.engine.state == STATE.PLAY || this.engine.state == STATE.MENU) {
-            this.scroll = (this.scroll + this.rate * this.engine.rate * delta/16) % this.engine.canvas.height;
-        }
-    }
-    
-    /** Render the background image. */
-    this.render = function(context) {
-        if (this.image == null) return;
-        var h1 = this.engine.canvas.height - this.scroll
-        var h2 = this.scroll;
-        var w = this.engine.canvas.width;
-        context.drawImage(this.image, 0, 0, w / this.ratio, h1 / this.ratio, 0, this.scroll, w, h1);
-        if (h2) context.drawImage(this.image, 0, h1 / this.ratio, w / this.ratio, h2 / this.ratio, 0, 0, w, h2);
-    }
-        
-}
-
 /** Drift engine. */
-function Drift(canvas) {
+class Drift extends Engine {
     
-    /* Super constructor. */
-    Engine.call(this, canvas);
-    var superclass = new Engine();
+    constructor(canvas) {
+        /* Super constructor. */
+        super(canvas);
+
+        /* Random data. */
+        this.cache = {};
+        this.cache["lastSkillBonus"] = 0;
+        this.cache["skillBonusCount"] = 0;    
+
+        /* Game objects. */
+        this.entities = {};
+        this.playlist = [];
+        this.messages = [];
+
+        /* State. */
+        this.state = STATE.LOAD;
+        this.difficulty = 10;
+
+        /* Rate. */
+        this.rate = 100;
+        this.target = 1000;
+
+        /* Score. */
+        this.score = 0;
+
+        /* Boost. */
+        this.boost = 100;
+    }
     
-    /* Random data. */
-    this.cache = {};
-    this.cache["lastSkillBonus"] = 0;
-    this.cache["skillBonusCount"] = 0;    
-
-    /* Game objects. */
-    this.entities = {};
-    this.playlist = [];
-    this.messages = [];
-
-    /* State. */
-    this.state = STATE.LOAD;
-    this.difficulty = 10;
-    
-    /* Rate. */
-    this.rate = 100;
-    this.target = 1000;
-	
-    /* Score. */
-    this.score = 0;
-
-    /* Boost. */
-    this.boost = 100;
 
     /** Setup the engine. */
-    this.setup = function() {
+    setup() {
         
         /* Super setup. */
-        superclass.setup.call(this);
+        super.setup();
         
         /* Reference to self. */
         var that = this;
@@ -544,7 +212,7 @@ function Drift(canvas) {
         
     }
     
-    this.resetGameMode = function() {
+    resetGameMode() {
         this.playlist[0].pause();
         this.cache.lsdMode = false;
         this.playList[1].pause();
@@ -554,21 +222,21 @@ function Drift(canvas) {
     }
     
     /** Go to the menu. */
-    this.menu = function() {
+    menu() {
         this.state = STATE.MENU;
         this.rate = 0;
         this.target = 0;
     }
     
     /** Play the game. */
-    this.play = function() {
+    play() {
         this.state = STATE.PLAY;
         this.rate = this.cache.rate || 0;
         this.target = this.cache.target || 1;
     }
     
     /** Replay. */
-    this.replay = function() {
+    replay() {
         this.entities.boat.reset();
         if (this.cache.loveMode) {
         	this.entities.boat.particleSystem.properties.startRadius = 6;
@@ -587,14 +255,14 @@ function Drift(canvas) {
     }
     
     /** Pause the engine. */
-    this.stop = function() {
+    stop() {
         this.state = STATE.STOP;
         this.cache.rate = this.rate;
         this.cache.target = this.target;
     }
     
     /** Once a round is over. */
-    this.dead = function() {
+    dead() {
         
         var allowScoreboard = this.state != STATE.DEAD;
         this.state = STATE.DEAD;
@@ -637,10 +305,10 @@ function Drift(canvas) {
     }
 	
 	/** Display. */
-	this.display = function() {
+	display() {
 		this.context.font = "16px Bit";
 		this.context.textBaseline = "hanging";
-		superclass.display.call(this);
+		super.display();
 		this.context.textAlign = "right";
 		this.context.fillText(Math.floor(this.score), this.canvas.width-10, 10);
 		this.context.textAlign = "center";
@@ -655,7 +323,7 @@ function Drift(canvas) {
 	}
 	
 	/** Leave a text message hanging on screen for a set amount of time. */
-	this.message = function(text, time) {
+	message(text, time) {
 		var that = this;
 		var obj = new String(text);
 		this.messages.push(obj);
@@ -663,7 +331,7 @@ function Drift(canvas) {
 	}
     
     /** Update the engine. */
-    this.update = function(delta) {
+    update(delta) {
          
         /* Check start. */
         if (this.keyboard[KEY.SPACE] == KEY.PRESSED) {
@@ -714,12 +382,12 @@ function Drift(canvas) {
         }
 		
         /* Update the superclass. */
-        superclass.update.call(this, delta);
+        super(delta);
         
     }
 	
     /* Check if a boat and an obstacle are colliding. */
-	this.colliding = function(obstacle, sprite, isBoat) {
+	colliding(obstacle, sprite, isBoat) {
         var bbox = sprite.bbox();
 		
         /* Get boat center position. */
@@ -784,7 +452,7 @@ function Drift(canvas) {
 	}
 
     /** Render the entire engine. */
-    this.render = function(delta) {
+    render(delta) {
 		
         /* Clear the canvas by rendering the background. */
         this.entities.background.render(this.context);
@@ -873,7 +541,7 @@ function Drift(canvas) {
 		if (this.showDisplay) this.display();
 	}
 	
-	function updateScoreboard(mode, name, score) {
+	updateScoreboard(mode, name, score) {
 		var request = new XMLHttpRequest();
 		request.onreadystatechange = function() {
 			if (request.readyState == 4 && request.status == 200) {
