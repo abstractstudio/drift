@@ -11,25 +11,14 @@ class Boat extends Sprite {
         /* Super constructor. */
         super(engine, 300, 550, 16*3, 28*3, 8*3, 10*3);
 
-        /* Movement rate. */
-        this.rate = 1;
-
         /* Movement. */
         this.rot = 0;
-        this.mov.xv = 0;
-        this.mov.xb = [50, 550];
-        this.mov.vb = [-1.5, 1.5];
+        this.xv = 0;
+        this.xb = [50, 550];
+        this.vb = [-1.5, 1.5];
 
         /* Rotational bounds. */
-        this.mov.rb = [-Math.PI/3, Math.PI/3];
-
-        /* Boost. */
-        this.temp = {};
-        this.temp.boost = 1;
-
-        /* Auto. */
-        this.autoupdate = true;
-        this.autorender = false;
+        this.rb = [-Math.PI/3, Math.PI/3];
 
         /* Shooting. */
         this.cooldown = 200;
@@ -42,9 +31,8 @@ class Boat extends Sprite {
         this.particleImage = null;
 
         /* Animation. */
-        this.animation = "boat";
-        this.addAnimation(new Animation("boat", [0, 1, 2]));
-        this.getAnimation().index = 1;
+        this.addAsset(this.engine.getAsset("boat"));
+        this.setRenderable("boat").index = 1;
         
     }
     

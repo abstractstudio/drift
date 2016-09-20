@@ -1,4 +1,7 @@
-@font-face { font-family: Bit; src: url("assets/PressStart2P.ttf") format("truetype"); }
+@font-face { 
+    font-family: Arcade; 
+    src: url("assets/8Bit.ttf") format("truetype"); 
+}
 
 body { 
     text-align: center; 

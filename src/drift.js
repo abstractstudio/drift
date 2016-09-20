@@ -2,9 +2,21 @@ goog.require("engine.Engine");
 goog.require("drift.Boat");
 goog.require("drift.Obstacle");
 goog.require("drift.Projectile");
+goog.require("drift.Title");
 goog.require("drift.Background");
 goog.provide("drift.Drift");
 goog.require("drift.Game");
+
+/** The Drift game.
+
+Here lies the core drift runtime. The following is an approximate state map for
+the actual game.
+
+LOAD -> MENU -> PLAY -> STOP -> DEAD -> PLAY <-
+
+
+
+*/
 
 
 /* Global constants. */
@@ -31,6 +43,7 @@ class Drift extends Engine {
         
         /* Game objects. */
         this.game = new Game(this);
+        this.title = new Title(this);
         this.background = new Background(this);
         this.boat = new Boat(this);
     
@@ -39,11 +52,6 @@ class Drift extends Engine {
 
     /** Setup the engine. */
     setup() {
-        
-        /* Super setup. */
-        super.setup();
-        
-
         
         /* Queue resources. */
         this.queueAsset("boat", ANIMATION, "assets/boat.png", {rows: 3});
@@ -68,8 +76,6 @@ class Drift extends Engine {
         
         /* Mess around with the context. */
         this.context.imageSmoothingEnabled = false;
-		
-		/* Static context stuff. */
 		this.context.fontFamily = "Bit";
         
     }
@@ -86,27 +92,28 @@ class Drift extends Engine {
     
     /** Go to the menu. */
     menu() {
-
+        this.state = MENU;
+        this.background.moving = false;
     }
     
     /** Play the game. */
     play() {
-
+        this.state = PLAY;
     }
     
     /** Replay. */
     replay() {
-
+        this.state = PLAY;
     }
     
     /** Pause the engine. */
     stop() {
-
+        this.state = STOP;
     }
     
     /** Once a round is over. */
     dead() {
-
+        this.state = DEAD;
     }
 	
 	/** Display. */
@@ -119,29 +126,38 @@ class Drift extends Engine {
 		
 	}
     
-    /** Update the engine. */
-    update(delta) {
-        this.background.update(delta);
-    }
-	
     /* Check if a boat and an obstacle are colliding. */
 	colliding(obstacle, sprite, isBoat) {
         
 	}
-
+	
+    /** Update the engine. */
+    update(delta) {
+        this.background.update(delta);
+        this.title.update(delta);
+    }
+	
     /** Render the entire engine. */
-    render(delta) {
+    render(context, canvas) {
 		
         /* Clear the canvas by rendering the background. */
-        this.background.render(this.context);
+        this.background.render(context);
         
         switch (this.state) {
                 
             /* Draw the loading screen. */
-            case LOAD:
-                break
-                
-                
+            case LOAD: 
+                context.fillStyle = "white";
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                context.fillStyle = "black";
+                context.fillText("Loading...", 50, 50);
+                break;
+            
+            case MENU: 
+                this.title.render(context, canvas);
+            
+                break;
+            
         }
 
 	}
