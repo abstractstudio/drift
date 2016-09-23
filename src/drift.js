@@ -89,10 +89,10 @@ class Drift extends Engine {
             
         /* Assign resources. */
         this.background.image = this.getAsset("water");
-        this.boat.setSheet(this.getAsset("boat"));
+        this.boat.setRenderable(this.getAsset("boat"));
         this.heartImage = this.getAsset("heart");
         //for (var i = 0; i < 10; i++) that.lasers[i].setSheet(this.getAsset("laser"));
-        for (var i = 0; i < this.difficulty; i++) this.obstacles[i].setSheet(this.getAsset("obstacles"));
+        for (var i = 0; i < this.difficulty; i++) this.obstacles[i].setRenderable(this.getAsset("obstacles"));
 
         /*that.manager.$("running").volume = 0.02;
         that.playlist.push(that.manager.$("running"));
