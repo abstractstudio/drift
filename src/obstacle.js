@@ -43,7 +43,7 @@ class Obstacle extends Sprite {
         for (var i = 0; i < this.engine.difficulty; i++) {
 						
 			/* Get the obstacle. */
-			var obstacle = this.engine.entities["obstacle" + i];
+			var obstacle = this.engine.obstacles[i];
 			if (!obstacle) continue;
 						
 			/* Skip if comparing to self. */

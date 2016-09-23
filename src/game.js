@@ -51,7 +51,13 @@ class Game {
 
         this.boatHorizontalAcceleration = 0.03;
         this.boatRotationalAcceleration = 0.04;
+        
+        this.difficulty = 0;
+        this.score = 0;
+        this.boost = 100;
 
+        this.rate = 100;
+        this.targetRate = 100;
         
     }
     

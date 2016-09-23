@@ -45,7 +45,12 @@ class Drift extends Engine {
         this.game = new Game(this);
         this.title = new Title(this);
         this.background = new Background(this);
+        
         this.boat = new Boat(this);
+        this.boat.reset();
+        this.obstacles = [];
+        for (var i = 0; i < this.game.difficulty; i++) obstacles[i] = new Obstacle(this);
+        
     
     }
     
@@ -84,26 +89,49 @@ class Drift extends Engine {
             
         /* Assign resources. */
         this.background.image = this.getAsset("water");
+        this.boat.setSheet(this.getAsset("boat"));
+        this.heartImage = this.getAsset("heart");
+        //for (var i = 0; i < 10; i++) that.lasers[i].setSheet(this.getAsset("laser"));
+        for (var i = 0; i < this.difficulty; i++) this.obstacles[i].setSheet(this.getAsset("obstacles"));
 
+        /*that.manager.$("running").volume = 0.02;
+        that.playlist.push(that.manager.$("running"));
+        that.manager.$("romance").volume = 0.04;
+        that.playlist.push(that.manager.$("romance"));*/
+        
+        console.log("Loaded resources.");
+        
         /* Set up menu. */
         this.menu();
-
     }
     
     /** Go to the menu. */
     menu() {
         this.state = MENU;
         this.background.moving = false;
+        this.game.rate = 0;
+        this.game.targetRate = 0;
     }
     
     /** Play the game. */
     play() {
         this.state = PLAY;
+        
+        this.boat.reset();
+        for (var i = 0; i < this.difficulty; i++) this.obstacles[i].respawn();
+        
+        this.game.target = 1;
+        this.game.score = 0;
+        this.game.boost = 100;
     }
     
     /** Replay. */
     replay() {
         this.state = PLAY;
+        for (var i = 0; i < this.game.difficulty; i++) this.obstacles[i].respawn();
+        this.game.target = 1;
+        this.game.score = 0;
+        this.game.boost = 100;
     }
     
     /** Pause the engine. */
@@ -114,6 +142,7 @@ class Drift extends Engine {
     /** Once a round is over. */
     dead() {
         this.state = DEAD;
+        this.game.target = 0;
     }
 	
 	/** Display. */
@@ -143,8 +172,10 @@ class Drift extends Engine {
         /* Clear the canvas by rendering the background. */
         this.background.render(context);
         
+        /* Render the boat (even if not playing). */
+        this.boat.render(context, null);
+        
         switch (this.state) {
-                
             /* Draw the loading screen. */
             case LOAD: 
                 context.fillStyle = "white";
@@ -156,6 +187,10 @@ class Drift extends Engine {
             case MENU: 
                 this.title.render(context, canvas);
             
+                break;
+                
+            case PLAY:
+                
                 break;
             
         }

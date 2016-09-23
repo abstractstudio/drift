@@ -42,7 +42,7 @@ class Boat extends Sprite {
         this.rot = 0;
         this.pos.x = 300;
         this.pos.y = 550;
-        this.mov.xv = 0;
+        this.xv = 0;
         
         this.particleSystem = new ParticleSystem(this.pos.x, this.pos.y + this.particleYOffset);
         this.particleSystem.setProperties({
@@ -176,11 +176,11 @@ class Boat extends Sprite {
     
     /** Move the boat. */
     move(delta) {
-        this.mov.xv = bound(this.mov.xv-Math.sin(this.rot)*this.mov.xa, this.mov.vb);
-        this.mov.xv -= Math.sin(this.rot) * (this.temp.boost || 0);
-        var mov = this.mov.xv * this.rate * this.engine.rate * delta/16;
-        this.pos.x = bound(this.pos.x+mov, this.mov.xb);
-        if (this.mov.xb.indexOf(this.pos.x) > -1) this.mov.xv = 0;
+        this.xv = bound(this.xv-Math.sin(this.rot)*this.mov.xa, this.vb);
+        this.xv -= Math.sin(this.rot) * (this.temp.boost || 0);
+        var mov = this.xv * this.rate * this.engine.rate * delta/16;
+        this.x = bound(this.pos.x+mov, this.xb);
+        if (this.xb.indexOf(this.pos.x) > -1) this.xv = 0;
     }
 	
 	bbox() {
