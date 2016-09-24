@@ -9,20 +9,14 @@ class Boat extends Sprite {
     constructor(engine) {
         
         /* Super constructor. */
-        super(engine, 300, 550, 16*3, 28*3, 8*3, 10*3);
+        super(engine, 250, 400, 16*3, 28*3, 8*3, 10*3);
 
         /* Movement. */
         this.rot = 0;
         this.xv = 0;
         this.xb = [50, 550];
         this.vb = [-1.5, 1.5];
-
-        /* Rotational bounds. */
         this.rb = [-Math.PI/3, Math.PI/3];
-
-        /* Shooting. */
-        this.cooldown = 200;
-        this.lastShootTime = 0;
 
         /* Water particle system. */
         this.particleSystem = new ParticleSystem(this.pos.x, this.pos.y);
@@ -40,53 +34,9 @@ class Boat extends Sprite {
     /* Reset the boat to it's original position. */
     reset() {
         this.rot = 0;
-        this.pos.x = 300;
-        this.pos.y = 550;
+        this.pos.x = 250;
+        this.pos.y = 480;
         this.xv = 0;
-        
-        this.particleSystem = new ParticleSystem(this.pos.x, this.pos.y + this.particleYOffset);
-        this.particleSystem.setProperties({
-            posVar: new Vector(this.width/2 - 4, 0), 
-            speed: 0.2, 
-            speedVar: 0.05, 
-            angle: Math.PI/2, 
-            angleVar: 7.5 * Math.PI/180,  
-            life: 200, 
-            lifeVar: 50, 
-            startRadius: 2.5, 
-            startRadiusVar: 0.25, 
-            endRadius: 1.0, 
-            endRadiusVar: 0.2, 
-            startColor: [101, 150, 187, 255], 
-            startColorVar: [10, 5, 0, 0],
-            endColor: [175, 201, 255, 64]
-            
-        });
-        this.particleSystem.totalParticles = 24;
-        this.particleSystem.emissionRate = 0.213;
-        this.particleSystem.init();
-        
-        this.sideParticleSystem = new ParticleSystem(this.pos.x, this.pos.y + this.particleYOffset);
-        this.sideParticleSystem.setProperties({
-            posVar: new Vector(this.width/2 - 4, 0), 
-            speed: 0.2, 
-            speedVar: 0.05, 
-            angle: Math.PI/2, 
-            angleVar: 10.0 * Math.PI/180,  
-            life: 500, 
-            lifeVar: 50, 
-            startRadius: 2.5, 
-            startRadiusVar: 0.25, 
-            endRadius: 1.0, 
-            endRadiusVar: 0.2, 
-            startColor: [101, 150, 187, 255], 
-            startColorVar: [10, 5, 0, 0],
-            endColor: [175, 201, 255, 64]
-            
-        });
-        this.sideParticleSystem.totalParticles = 64;
-        this.sideParticleSystem.emissionRate = 0.128;
-        this.sideParticleSystem.init();
     }
     
     /** Update the boat. */
@@ -189,3 +139,53 @@ class Boat extends Sprite {
 	}
     
 }
+
+
+
+/* FROM reset()
+
+        this.particleSystem = new ParticleSystem(this.pos.x, this.pos.y + this.particleYOffset);
+        this.particleSystem.setProperties({
+            posVar: new Vector(this.width/2 - 4, 0), 
+            speed: 0.2, 
+            speedVar: 0.05, 
+            angle: Math.PI/2, 
+            angleVar: 7.5 * Math.PI/180,  
+            life: 200, 
+            lifeVar: 50, 
+            startRadius: 2.5, 
+            startRadiusVar: 0.25, 
+            endRadius: 1.0, 
+            endRadiusVar: 0.2, 
+            startColor: [101, 150, 187, 255], 
+            startColorVar: [10, 5, 0, 0],
+            endColor: [175, 201, 255, 64]
+            
+        });
+        this.particleSystem.totalParticles = 24;
+        this.particleSystem.emissionRate = 0.213;
+        this.particleSystem.init();
+        
+        this.sideParticleSystem = new ParticleSystem(this.pos.x, this.pos.y + this.particleYOffset);
+        this.sideParticleSystem.setProperties({
+            posVar: new Vector(this.width/2 - 4, 0), 
+            speed: 0.2, 
+            speedVar: 0.05, 
+            angle: Math.PI/2, 
+            angleVar: 10.0 * Math.PI/180,  
+            life: 500, 
+            lifeVar: 50, 
+            startRadius: 2.5, 
+            startRadiusVar: 0.25, 
+            endRadius: 1.0, 
+            endRadiusVar: 0.2, 
+            startColor: [101, 150, 187, 255], 
+            startColorVar: [10, 5, 0, 0],
+            endColor: [175, 201, 255, 64]
+            
+        });
+        this.sideParticleSystem.totalParticles = 64;
+        this.sideParticleSystem.emissionRate = 0.128;
+        this.sideParticleSystem.init();
+        
+*/

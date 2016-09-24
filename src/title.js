@@ -10,8 +10,8 @@ class Title extends Sprite {
     }
 
     update(delta) {
-        this.counter += delta / 200;
-        this.height = 5 * Math.sin(this.counter);
+        //this.counter += delta / 200;
+        //this.height = 5 * Math.sin(this.counter);
     }
     
     render(context, canvas) {
@@ -20,9 +20,9 @@ class Title extends Sprite {
         context.textAlign = "center";         
         context.fillStyle = "black";
         context.font = "20px Arcade";
-        context.fillText("Chincoteague Drift", cx, cy*0.5 + this.height);
+        context.fillText("Chincoteague Drift", cx, 100 + this.height);
         context.font = "12px Arcade";
-        context.fillText("Created by Abstract Studio", cx, cy*0.5 + 20 + this.height);
+        context.fillText("Created by Abstract Studio", cx, 120 + this.height);
     }
 
 }

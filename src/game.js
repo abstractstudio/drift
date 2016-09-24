@@ -1,3 +1,4 @@
+goog.require("engine.EventManager")
 goog.provide("drift.Game");
 
 /** The game container.
@@ -8,34 +9,24 @@ stacked modifications which can be discretely add, inserted, or removed.
 
 */
 
-
-class Value {
-
-    constructor(value, tag, priority) {
-        this.value = value;
-        this.tag = tag;
-        this.priority = priority || 0;
-    }
-
-}
+class Property extends EventManager {
     
-class Discrete extends Value {
-    
-}
-
-class Factor extends Value {        
-    
-    
-    
-}
-
-class Property {
-    
-    constructor(type, base) {
-        this.type = type;
+    constructor(base) {
+        super();
+        this.type = typeof base;
         this.base = base;
-        this.stack = [];
+        this.reset();
     }
+    
+    reset() { this.set(this.base); }
+    
+    set(value) { 
+        this.value = value;
+        this.fireEvent("set", value);
+        return this.value;
+    }
+    
+    get() { return this.value; }
     
 }
 
@@ -43,21 +34,19 @@ class Game {
     
     constructor() {
         
-        this.globalRate = 1;
-        this.backgroundRate = 1;
-        this.boatRate = 1;
-
-        this.backgroundImageRatio = 6;
-
-        this.boatHorizontalAcceleration = 0.03;
-        this.boatRotationalAcceleration = 0.04;
+        this.globalRate = new Property(0);
+        this.targetGlobalRate = new Property(0)
+        this.backgroundRate = new Property(0);
+        this.boatRate = new Property(0);
         
-        this.difficulty = 0;
-        this.score = 0;
-        this.boost = 100;
-
-        this.rate = 100;
-        this.targetRate = 100;
+        this.backgroundImageRatio = new Property(6);
+        
+        this.boatHorizontalAcceleration = new Property(0.03);
+        this.boatRotationalAcceleration = new Property(0.04);
+        
+        this.difficulty = new Property(0);
+        this.score = new Property(0);
+        this.boost = new Property(100);
         
     }
     

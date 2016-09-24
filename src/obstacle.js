@@ -17,10 +17,6 @@ class Obstacle extends Sprite {
 
         this.detectCollision = true;
 
-        /* Auto. */
-        this.autoupdate = true;
-        this.autorender = true;
-
         /* Animation. */
         this.animation = "obstacle";
         this.addAnimation(new Animation("obstacle", [0, 1, 2, 3]));

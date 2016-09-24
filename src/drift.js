@@ -45,13 +45,11 @@ class Drift extends Engine {
         this.game = new Game(this);
         this.title = new Title(this);
         this.background = new Background(this);
-        
         this.boat = new Boat(this);
-        this.boat.reset();
         this.obstacles = [];
-        for (var i = 0; i < this.game.difficulty; i++) obstacles[i] = new Obstacle(this);
+        for (var i = 0; i < this.game.difficulty; i++) 
+            obstacles[i] = new Obstacle(this);
         
-    
     }
     
 
@@ -59,7 +57,7 @@ class Drift extends Engine {
     setup() {
         
         /* Queue resources. */
-        this.queueAsset("boat", ANIMATION, "assets/boat.png", {rows: 3});
+        this.queueAsset("boat", ANIMATION, "assets/boat.png", {columns: 3});
         this.queueAsset("obstacles", IMAGE, "assets/obstacles2.png"); //
         this.queueAsset("water", IMAGE, "assets/water.png");
         this.queueAsset("laser", IMAGE, "assets/laser.png");
@@ -91,47 +89,47 @@ class Drift extends Engine {
         this.background.image = this.getAsset("water");
         this.boat.setRenderable(this.getAsset("boat"));
         this.heartImage = this.getAsset("heart");
-        //for (var i = 0; i < 10; i++) that.lasers[i].setSheet(this.getAsset("laser"));
-        for (var i = 0; i < this.difficulty; i++) this.obstacles[i].setRenderable(this.getAsset("obstacles"));
+        for (var i = 0; i < this.difficulty; i++) 
+            this.obstacles[i].setRenderable(this.getAsset("obstacles"));
 
         /*that.manager.$("running").volume = 0.02;
         that.playlist.push(that.manager.$("running"));
         that.manager.$("romance").volume = 0.04;
         that.playlist.push(that.manager.$("romance"));*/
-        
-        console.log("Loaded resources.");
-        
+                
         /* Set up menu. */
         this.menu();
+        
     }
     
     /** Go to the menu. */
     menu() {
+        
         this.state = MENU;
-        this.background.moving = false;
-        this.game.rate = 0;
-        this.game.targetRate = 0;
+
+        this.boat.reset();
+        
+        this.game.backgroundRate.set(0.1);
+        this.game.globalRate.set(0);
+        this.game.targetGlobalRate.set(0);
+        
     }
     
     /** Play the game. */
     play() {
         this.state = PLAY;
-        
         this.boat.reset();
-        for (var i = 0; i < this.difficulty; i++) this.obstacles[i].respawn();
+        for (var i = 0; i < this.difficulty; i++) 
+            this.obstacles[i].respawn();
         
-        this.game.target = 1;
-        this.game.score = 0;
-        this.game.boost = 100;
+        this.game.targetGlobalRate.set(1);
+        this.game.score.reset();
+        this.game.boost.reset();
     }
     
     /** Replay. */
     replay() {
-        this.state = PLAY;
-        for (var i = 0; i < this.game.difficulty; i++) this.obstacles[i].respawn();
-        this.game.target = 1;
-        this.game.score = 0;
-        this.game.boost = 100;
+        this.play();
     }
     
     /** Pause the engine. */
@@ -142,7 +140,7 @@ class Drift extends Engine {
     /** Once a round is over. */
     dead() {
         this.state = DEAD;
-        this.game.target = 0;
+        this.game.target.set(0);
     }
 	
 	/** Display. */
@@ -170,23 +168,25 @@ class Drift extends Engine {
     render(context, canvas) {
 		
         /* Clear the canvas by rendering the background. */
-        this.background.render(context);
+        this.background.render(context, canvas);
         
         /* Render the boat (even if not playing). */
-        this.boat.render(context, null);
+        this.boat.render(context, canvas);
         
+        /* Render by state. */
         switch (this.state) {
+            
             /* Draw the loading screen. */
             case LOAD: 
                 context.fillStyle = "white";
                 context.fillRect(0, 0, canvas.width, canvas.height);
                 context.fillStyle = "black";
-                context.fillText("Loading...", 50, 50);
+                context.fillText("Loading...", 10, 10);
                 break;
             
             case MENU: 
                 this.title.render(context, canvas);
-            
+                
                 break;
                 
             case PLAY:
