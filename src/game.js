@@ -28,25 +28,33 @@ class Property extends EventManager {
     
     get() { return this.value; }
     
+    increment(value) { this.set(this.value + value); }
+    
 }
 
 class Game {
     
     constructor() {
         
-        this.globalRate = new Property(0);
-        this.targetGlobalRate = new Property(0)
-        this.backgroundRate = new Property(0);
-        this.boatRate = new Property(0);
+        this.globalRate = new Property(1);
+        this.targetGlobalRate = new Property(1)
+        this.backgroundRate = new Property(1);
+        this.boatRate = new Property(1);
+        this.obstacleRate = new Property(1);
         
         this.backgroundImageRatio = new Property(6);
         
         this.boatHorizontalAcceleration = new Property(0.03);
         this.boatRotationalAcceleration = new Property(0.04);
         
-        this.difficulty = new Property(0);
+        this.difficulty = new Property(10);
         this.score = new Property(0);
         this.boost = new Property(100);
+        
+        this.lastSkillBonus = new Property(0);
+        this.skillBonusCount = new Property(0);
+        
+        this.showDisplay = new Property(true);
         
     }
     

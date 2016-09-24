@@ -10,25 +10,30 @@ class Obstacle extends Sprite {
         super(engine);
 
         /* Movement. */
-        this.rate = 1;
         this.rad = 0;
         this.rot = 0;
-        this.mov = {yv: 2};
+        this.yv = 2;
 
         this.detectCollision = true;
 
         /* Animation. */
-        this.animation = "obstacle";
-        this.addAnimation(new Animation("obstacle", [0, 1, 2, 3]));
+        //this.animation = "obstacle";
+        //this.addAnimation(new Animation("obstacle", [0, 1, 2, 3]));*/
+        this.obstacleNumber = Math.floor(Math.random() * 5);
 
     }
 	
 	/** Update the obstacle. */
 	update(delta) {
-		if (this.engine.state != STATE.PLAY) return;
-		this.pos.y += this.mov.yv * Obstacle.rate * this.engine.rate;
+		if (this.engine.state != PLAY) return;
+		this.pos.y += this.yv * this.engine.game.obstacleRate.get() * this.engine.game.globalRate.get();
         if (this.pos.y > this.engine.canvas.height + this.rad && delta != 0) this.respawn();
 	}
+    
+    render(delta) {
+        this.getRenderable().frame(this.obstacleNumber);
+        super.render(delta);
+    }
 	
 	/** Respawn the obstacle. */
 	respawn() {
@@ -46,7 +51,7 @@ class Obstacle extends Sprite {
             if (obstacle === this) continue;
 						
             /* Fail and send to bottom if colliding with another or too close. */
-            if (Vector.distance(this.pos, obstacle.pos) < this.rad + obstacle.rad + this.engine.entities.boat.height*Math.sqrt(this.engine.rate)*1.2) {
+            if (Vector.distance(this.pos, obstacle.pos) < this.rad + obstacle.rad + this.engine.entities.boat.height*Math.sqrt(this.engine.game.globalRate.get())*1.2) {
                 this.pos.y = this.engine.canvas.height + this.rad + 1;
 				break;
             }
@@ -58,20 +63,15 @@ class Obstacle extends Sprite {
 	/** Randomize the obstacle. */
 	randomize() {
         this.rad = Math.random()*10 + 10;
-        this.cpos.x = this.rad;
-        this.cpos.y = this.rad;
+        this.center.x = this.rad;
+        this.center.y = this.rad;
         this.width = this.height = this.rad*2;
         this.rot = Math.random() * 2 * Math.PI;
         this.pos.x = Math.random() * (this.engine.canvas.width-50) + 25;
         this.pos.y = -Math.random() * this.engine.canvas.height - this.rad;
-        this.getAnimation().index = Math.floor(Math.random() * 5);
+        this.obstalceNumber = Math.floor(Math.random() * 5);
 	    this.rad -= 2;
         this.detectCollision = true;
-        this.autoupdate = true;
-        this.autorender = true;
 	}
 	
 }
-
-/* Static rate. */
-Obstacle.rate = 1;

@@ -12,10 +12,12 @@ class Boat extends Sprite {
         super(engine, 250, 400, 16*3, 28*3, 8*3, 10*3);
 
         /* Movement. */
-        this.rot = 0;
         this.xv = 0;
-        this.xb = [50, 550];
+        this.xa = 0.05;
+        this.xb = [30, 450];
         this.vb = [-1.5, 1.5];
+        this.rot = 0;
+        this.rv = Math.PI/360;
         this.rb = [-Math.PI/3, Math.PI/3];
 
         /* Water particle system. */
@@ -25,8 +27,8 @@ class Boat extends Sprite {
         this.particleImage = null;
 
         /* Animation. */
-        this.addAsset(this.engine.getAsset("boat"));
-        this.setRenderable("boat").index = 1;
+        //this.addAsset(this.engine.getAsset("boat"));
+        //this.setRenderable("boat").index = 1;
         
     }
     
@@ -43,7 +45,7 @@ class Boat extends Sprite {
     update(delta) {
         
         /* Only allow the boat to move if playing. */
-        if (this.engine.state == STATE.PLAY) {
+        if (this.engine.state == PLAY) {
 
             /* Left and right input. */
             var keyboard = this.engine.keyboard;
@@ -53,25 +55,25 @@ class Boat extends Sprite {
             /* Only left. */
             if (left && !right) { 
                 this.turn(+delta);
-                this.getAnimation().index = 0;
+                this.getRenderable().frame(0);
 
             /* Only right. */
             } else if (right && !left) {
                 this.turn(-delta);
-                this.getAnimation().index = 2; 
+                this.getRenderable().frame(2); 
 
             /* Neither or both. */
-            } else { this.getAnimation().index = 1; }
+            } else { this.getRenderable().frame(1); }
 
             /* Move. */
             this.move(delta);
             
             /* Update particle systems. */
             var boost = this.temp.boost > 0 ? 0.75 : 0.5;
-            this.updateParticles(delta * bound(this.engine.rate, [0, 1.5]) * boost);
+            this.updateParticles(delta * bound(this.engine.game.globalRate.get(), [0, 1.5]) * boost);
             
             /* Fire lasers. */
-            for (var i = 0; i < 10; i++) {
+           /* for (var i = 0; i < 10; i++) {
                 if (keyboard[76] && !this.engine.entities["laser"+i].active && Date.now() - this.lastShootTime > this.cooldown) { // L
                 	var blaster = this.engine.manager.$("blaster");
                 	blaster.volume = 0.3;
@@ -84,7 +86,7 @@ class Boat extends Sprite {
                     this.lastShootTime = Date.now();
                 }
                 this.engine.entities["laser"+i].update(delta);
-            }
+            }*/
         }
 
         this.temp = {};
@@ -120,22 +122,23 @@ class Boat extends Sprite {
     
     /** Turn the boat. */
     turn(delta) {
-        var rot = this.mov.rv * this.rate * this.engine.rate * delta/16;
-        this.rot = bound(this.rot+rot, this.mov.rb);
+        var rot = this.rv * this.engine.game.boatRate.get() * this.engine.game.globalRate.get() * delta/16;
+        this.rot = bound(this.rot+rot, this.rb);
     }
     
     /** Move the boat. */
     move(delta) {
-        this.xv = bound(this.xv-Math.sin(this.rot)*this.mov.xa, this.vb);
+        this.xv = bound(this.xv-Math.sin(this.rot)*this.xa, this.vb);
         this.xv -= Math.sin(this.rot) * (this.temp.boost || 0);
-        var mov = this.xv * this.rate * this.engine.rate * delta/16;
-        this.x = bound(this.pos.x+mov, this.xb);
+        var mov = this.xv * this.engine.game.boatRate.get() * this.engine.game.globalRate.get() * delta/16;
+        this.pos.x = bound(this.pos.x+mov, this.xb);
         if (this.xb.indexOf(this.pos.x) > -1) this.xv = 0;
     }
 	
 	bbox() {
 		var tl = this.topLeft();
 		return [tl.x, tl.y, this.width, this.height - 4*3];
+        //return [this.pos.x, this.pos.y, this.width, this.height - 4*3];
 	}
     
 }
