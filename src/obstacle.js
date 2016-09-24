@@ -6,28 +6,31 @@ goog.provide("drift.Obstacle");
 class Obstacle extends Sprite {
     
     constructor(engine) {
-        /* Super constructor. */
-        super(engine);
+        
+        /* Super constructor. Keep the sprites out of the way.*/
+        super(engine, -20, -20);
 
         /* Movement. */
         this.rad = 0;
         this.rot = 0;
         this.yv = 2;
-
+        
+        /* Collision. */
         this.detectCollision = true;
-
-        /* Animation. */
-        //this.animation = "obstacle";
-        //this.addAnimation(new Animation("obstacle", [0, 1, 2, 3]));*/
+        
+        /* Identification. */
         this.obstacleNumber = Math.floor(Math.random() * 5);
 
     }
 	
 	/** Update the obstacle. */
 	update(delta) {
+        
 		if (this.engine.state != PLAY) return;
+        
 		this.pos.y += this.yv * this.engine.game.obstacleRate.get() * this.engine.game.globalRate.get();
         if (this.pos.y > this.engine.canvas.height + this.rad && delta != 0) this.respawn();
+        
 	}
     
     render(delta) {

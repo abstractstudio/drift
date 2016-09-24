@@ -15,8 +15,6 @@ the actual game.
 
 LOAD -> MENU -> PLAY -> STOP -> DEAD -> PLAY <-
 
-
-
 */
 
 
@@ -46,8 +44,6 @@ class Drift extends Engine {
         this.game = new Game(this);
         this.messages = [];
         this.title = new Title(this);
-        
-        
         this.background = new Background(this);
         this.boat = new Boat(this);
         this.obstacles = [];
@@ -62,7 +58,7 @@ class Drift extends Engine {
         
         /* Queue resources. */
         this.queueAsset("boat", ANIMATION, "assets/boat.png", {columns: 3});
-        this.queueAsset("obstacles", ANIMATION, "assets/obstacles2.png", {rows: 2, columns: 3}); //
+        this.queueAsset("obstacles", ANIMATION, "assets/obstacles2.png", {rows: 2, columns: 3});
         this.queueAsset("water", IMAGE, "assets/water.png");
         this.queueAsset("laser", IMAGE, "assets/laser.png");
         this.queueAsset("heart", IMAGE, "assets/heart.png");
@@ -75,17 +71,16 @@ class Drift extends Engine {
             if (this.state == PLAY || this.state == STOP) return;
             var x = this.mouse.x - that.canvas.offsetLeft + document.body.scrollLeft;
             var y = this.mouse.y - that.canvas.offsetTop + document.body.scrollTop;
-            
-            
         });
         
+        /* Pause the game when the player leaves the window. */
         window.onblur = () => {
             if (this.state == "PLAY") this.stop();
         };
         
         /* Mess around with the context. */
         this.context.imageSmoothingEnabled = false;
-		this.context.fontFamily = "Bit";
+		this.context.fontFamily = "Arcade";
         
     }
     
@@ -112,9 +107,7 @@ class Drift extends Engine {
     menu() {
         
         this.state = MENU;
-
         this.boat.reset();
-        
         this.game.backgroundRate.set(0.1);
         this.game.globalRate.set(0);
         this.game.targetGlobalRate.set(0);
@@ -152,7 +145,6 @@ class Drift extends Engine {
 	
 	/** Display. */
     display() {
-        this.context.font = "16px Bit";
 		this.context.textBaseline = "hanging";
 		this.context.textAlign = "right";
 		this.context.fillText(Math.floor(this.game.score.get()), this.canvas.width-10, 10);
@@ -242,6 +234,7 @@ class Drift extends Engine {
 	
     /** Update the engine. */
     update(delta) {
+        this.game.update(delta);
         this.background.update(delta);
         this.title.update(delta);
         
@@ -250,12 +243,6 @@ class Drift extends Engine {
             this.obstacles[i].update(delta);
             //console.log(this.obstacles[i].pos);
         }
-        
-        /* Move rate to target. */
-        if (this.game.globalRate.get() > this.game.targetGlobalRate.get()) 
-            this.game.globalRate.set(Math.max(this.game.targetGlobalRate.get(), this.game.globalRate.get()-delta/16*0.05));
-        else if (this.game.globalRate.get() < this.game.targetGlobalRate.get()) 
-            this.game.globalRate.set(Math.min(this.game.targetGlobalRate.get(), this.game.globalRate.get()+delta/16*0.05));
         
         /* Check start. */
         if (this.keyboard[KEY.SPACE] == BUTTON.PRESSED) {
@@ -334,12 +321,11 @@ class Drift extends Engine {
             
             case MENU: 
                 this.title.render(context, canvas);
-                /* Draw the title and buttons. */
                 this.context.fillStyle = "black";
                 this.context.textAlign = "center";
                 this.context.textBaseline = "bottom";
-                this.context.font = "20px Bit";
-                this.context.fillText("PRESS SPACE TO START", canvas.width/2, canvas.height/3+24);
+                this.context.font = "16px Arcade";
+                this.context.fillText("PRESS SPACE TO START", canvas.width/2, canvas.height/2);
 
                 break;
                 
@@ -353,9 +339,9 @@ class Drift extends Engine {
                 this.context.fillStyle = "black";
                 this.context.textAlign = "center";
                 this.context.textBaseline = "bottom";
-                this.context.font = "28px Bit";
+                this.context.font = "28px Arcade";
                 this.context.fillText("PAUSED", canvas.width/2, canvas.height/3);
-                this.context.font = "20px Bit";
+                this.context.font = "20px Arcade";
                 this.context.fillText("ESCAPE TO TOGGLE", canvas.width/2, canvas.height/3+30);
                 break;
             

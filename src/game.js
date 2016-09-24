@@ -58,4 +58,14 @@ class Game {
         
     }
     
+    update(delta) {
+        
+        /* Interpolate to target rate. */
+        var g = this.globalRate.get();
+        var t = this.targetGlobalRate.get();
+        if (g > t) this.globalRate.set(Math.max(t, g-delta/16*0.05));
+        else if (g < t) this.globalRate.set(Math.min(t, g+delta/16*0.05));
+        
+    }
+    
 }

@@ -12,16 +12,16 @@ class Background {
         /* Image and other data. */
         this.image = null;
         this.scroll = 0;
-        
-        /* Active. */
-        this.moving = true;
 
     }
     
     /** Update the background image. */
     update(delta) {
-        if (this.moving)
-            this.scroll = (this.scroll + this.engine.game.backgroundRate.get() * delta/8) % this.engine.canvas.height;
+        var b = this.engine.game.backgroundRate.get();
+        var g = this.engine.game.globalRate.get();
+        var h = this.engine.canvas.height;
+        var s = this.engine.state == MENU;
+        this.scroll = (this.scroll + b * (s ? g : 1) * delta/8) % h;
     }
     
     /** Render the background image. */
