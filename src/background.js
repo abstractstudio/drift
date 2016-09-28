@@ -31,7 +31,6 @@ class Background {
         var h2 = this.scroll;
         var w = this.engine.canvas.width;
         var bgir = this.engine.game.backgroundImageRatio.get();
-        
         context.drawImage(this.image, 0, 0, w / bgir, h1 / bgir, 0, this.scroll, w, h1);
         if (h2) context.drawImage(this.image, 0, h1 / bgir, w / bgir, h2 / bgir, 0, 0, w, h2);
     }

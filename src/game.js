@@ -56,6 +56,8 @@ class Game {
         
         this.showDisplay = new Property(true);
         
+        this.boostDepletion = new Property(1/8);
+        
     }
     
     update(delta) {
