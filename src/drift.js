@@ -6,24 +6,26 @@ goog.require("drift.Title");
 class Drift extends Engine2D {
 
     setup() {
+        this.game = new Game();
         this.states.add("menu", MenuState);
         this.states.goto("menu");
+        this.assets.queue("water", IMAGE, "assets/water.png");
+        
     }
     
     load() {
-        this.entities.add("title", new Title());
+        this.entities.add("title", new Title(this));
+        var water = new Water(this);
+        water.image = this.assets.get("water");
+        this.entities.add("water", water);
     }
     
-    prerender(context, canvas) {
-        this.state.render(context, canvas);
-    }
-    
-    postrender(context, canvas) {
+    render(context, canvas) {
         this.state.render(context, canvas);
     }
     
     update(delta) {
-        
+        this.state.update(delta);
     }
     
 }
