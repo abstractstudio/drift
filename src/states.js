@@ -12,6 +12,7 @@ class MenuState extends State {
         context.clearRect(0, 0, canvas.width, canvas.height);
         this.entities.get("water").render(context, canvas);
         this.entities.get("title").render(context, canvas);
+        this.entities.get("boat").render(context, canvas);
     }
     
     stop() {

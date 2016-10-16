@@ -10,15 +10,17 @@ class Drift extends Engine2D {
         this.states.add("menu", MenuState);
         this.states.goto("menu");
         this.assets.queue("water", IMAGE, "assets/water.png");
-        
+        this.assets.queue("boat", ANIMATION, "assets/boat.png", {columns: 3});
     }
     
     load() {
         this.entities.add("title", new Title(this));
-        
         var water = new Water(this);
-        water.image = this.assets.get("water");
+        water.renderable = this.assets.get("water");
         this.entities.add("water", water);
+        var boat = new Boat(this);
+        boat.renderable = this.assets.get("boat")
+        this.entities.add("boat", boat);
     }
     
     render(context, canvas) {
