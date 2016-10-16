@@ -10,10 +10,8 @@ class MenuState extends State {
     
     render(context, canvas) {
         context.clearRect(0, 0, canvas.width, canvas.height);
-        context.fillStyle = "black";
-        context.textAlign = "center";
-        context.textBaseline = "bottom";
-        context.fillText("PRESS SPACE TO START", canvas.width/2, canvas.height/2);
+        this.entities.get("water").render(context, canvas);
+        this.entities.get("title").render(context, canvas);
     }
     
     stop() {

@@ -15,6 +15,7 @@ class Drift extends Engine2D {
     
     load() {
         this.entities.add("title", new Title(this));
+        
         var water = new Water(this);
         water.image = this.assets.get("water");
         this.entities.add("water", water);
