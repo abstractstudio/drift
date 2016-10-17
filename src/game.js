@@ -42,7 +42,8 @@ class Game {
         this.boatRate = new Property(1);
         this.obstacleRate = new Property(1);
         
-        this.backgroundImageRatio = new Property(6);
+        this.backgroundImageScale = new Property(6);
+        this.foregroundImageScale = new Property(2.4);
         
         this.boatHorizontalAcceleration = new Property(0.03);
         this.boatRotationalAcceleration = new Property(0.04);

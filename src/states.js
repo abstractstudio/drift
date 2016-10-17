@@ -5,7 +5,11 @@ goog.provide("drift.MenuState");
 class MenuState extends State {
     
     start() {
-        
+        this.game.backgroundRate.set(0.2);
+    }
+    
+    update(delta) {
+        this.entities.get("water").update(delta);
     }
     
     render(context, canvas) {
