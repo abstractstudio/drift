@@ -10,7 +10,7 @@ class Drift extends Engine2D {
         this.states.add("menu", MenuState);
         this.states.goto("menu");
         this.assets.queue("water", IMAGE, "assets/water.png");
-        this.assets.queue("boat", ANIMATION, "assets/boat.png", {columns: 3});
+        this.assets.queue("boat", ANIMATION, "assets/boat.png", {frameIndex: 1, columns: 3});
     }
     
     load() {
@@ -25,6 +25,10 @@ class Drift extends Engine2D {
     
     render(context, canvas) {
         this.state.render(context, canvas);
+        context.font = "12px Arcade";
+        context.textAlign = "left";         
+        context.textBaseline = "top";
+        context.fillText(Math.floor(this.fps()), 10, 10);
     }
     
     update(delta) {

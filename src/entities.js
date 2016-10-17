@@ -43,8 +43,8 @@ class Water extends Entity2D {
     
     render(context, canvas) {
         if (this.renderable == null) return;
-        var h1 = canvas.height - this.scroll
-        var h2 = this.scroll;
+        var h1 = canvas.height - this.scroll;
+        var h2 = this.scroll + 1;
         var w = canvas.width;
         var bgir = this.engine.game.backgroundImageScale.get();
         context.drawImage(this.renderable, 0, 0, w / bgir, h1 / bgir, 0, this.scroll, w, h1);
