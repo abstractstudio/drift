@@ -51,6 +51,7 @@ class Game {
         this.difficulty = new Property(10);
         this.score = new Property(0);
         this.boost = new Property(100);
+        this.gameBoatY = new Property(500);
         
         this.lastSkillBonus = new Property(0);
         this.skillBonusCount = new Property(0);

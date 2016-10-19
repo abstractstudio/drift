@@ -1,7 +1,7 @@
 goog.require("engine.Engine2D");
 goog.require("drift.MenuState");
 goog.require("drift.PlayState");
-goog.require("drift.MenuPlayTransition");
+//goog.require("drift.MenuPlayTransition");
 goog.require("drift.Title");
 
 
@@ -11,8 +11,7 @@ class Drift extends Engine2D {
         this.game = new Game();
         this.states.add("menu", MenuState);
         this.states.add("play", PlayState);
-        this.states.connect("menu", "play", MenuPlayTransition);
-        this.states.go("menu");
+        this.states.link("menu", "play"); //, MenuPlayTransition);
         this.assets.queue("water", IMAGE, "assets/water.png");
         this.assets.queue("boat", ANIMATION, "assets/boat.png", {frameIndex: 1, columns: 3});
     }
@@ -25,6 +24,7 @@ class Drift extends Engine2D {
         var boat = new Boat(this);
         boat.renderable = this.assets.get("boat")
         this.entities.add("boat", boat);
+        this.states.go("menu");
     }
     
     render(context, canvas) {

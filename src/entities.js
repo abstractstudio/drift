@@ -8,7 +8,7 @@ class Title extends Entity2D {
         super();
         this.engine = engine;
         this.transform.x = canvas.width / 2;
-        this.transform.y = 120;
+        this.transform.y = 100;
     }
     
     render(context, canvas) {
@@ -17,7 +17,7 @@ class Title extends Entity2D {
         context.font = "20px Arcade";
         context.fillText("CHINCOTEAGUE DRIFT", this.transform.x, this.transform.y);
         context.font = "12px Arcade";
-        context.fillText("Created by Abstract Studio", this.transform.x, this.transform.y + 20);
+        context.fillText("Created by Abstract Studio", this.transform.x, this.transform.y + 30);
         if (Math.floor(Date.now() / 500) % 2 == 0) {
             context.font = "12px Arcade";
             context.fillText("PRESS SPACE TO START", canvas.width/2, canvas.height - 120);
@@ -60,12 +60,16 @@ class Boat extends Entity2D {
         this.engine = engine;
     }
     
+    update(delta) {
+        
+    }
+    
     render(context, canvas) {
         if (this.renderable == null) return;
         var w = this.renderable.width;
         var h = this.renderable.height;
         var s = this.engine.game.foregroundImageScale.get();
-        context.drawAnimation(this.renderable, canvas.width/2 - w*s/2, canvas.height/2 - h*s/2, w * s, h * s);
+        context.drawAnimation(this.renderable, this.transform.x - w*s/2, this.transform.y - h*s/2, w * s, h * s);
     }
     
 }
