@@ -20,6 +20,7 @@ class MenuState extends State {
             this.startingAnimation = true;
         
         this.entities.get("water").update(delta);
+        this.entities.get("title").update(delta);
     }
     
     render(context, canvas) {

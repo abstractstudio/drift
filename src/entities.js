@@ -1,4 +1,5 @@
 goog.require("engine.Entity2D")
+goog.require("engine.CircleParticleSystem")
 goog.provide("drift.Title");
 goog.provide("drift.Water");
 
@@ -9,6 +10,18 @@ class Title extends Entity2D {
         this.engine = engine;
         this.transform.x = canvas.width / 2;
         this.transform.y = 100;
+        
+        this.particleSystem = new CircleParticleSystem(1000);
+        this.particleSystem.transform = new Transform2D(new Vector2(200, 200), 0, 1);
+        this.particleSystem.posVar = new Vector2(2, 2);
+        this.particleSystem.life = 10;
+        this.particleSystem.speed = 1.0;
+        this.particleSystem.startColor = [0, 255, 255];
+    }
+    
+    update(delta) {
+        this.particleSystem.update(delta);
+        console.log(this.particleSystem._particlePool[0].transform);
     }
     
     render(context, canvas) {
@@ -22,6 +35,8 @@ class Title extends Entity2D {
             context.font = "12px Arcade";
             context.fillText("PRESS SPACE TO START", canvas.width/2, canvas.height - 120);
         }
+        
+        this.particleSystem.render(context, canvas);
     }
 
 }
@@ -58,6 +73,8 @@ class Boat extends Entity2D {
     constructor(engine) {
         super();
         this.engine = engine;
+        
+       
     }
     
     update(delta) {
