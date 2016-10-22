@@ -10,18 +10,10 @@ class Title extends Entity2D {
         this.engine = engine;
         this.transform.x = canvas.width / 2;
         this.transform.y = 100;
-        
-        this.particleSystem = new CircleParticleSystem(1000);
-        this.particleSystem.transform = new Transform2D(new Vector2(200, 200), 0, 1);
-        this.particleSystem.posVar = new Vector2(2, 2);
-        this.particleSystem.life = 10;
-        this.particleSystem.speed = 1.0;
-        this.particleSystem.startColor = [0, 255, 255];
     }
     
     update(delta) {
-        this.particleSystem.update(delta);
-        console.log(this.particleSystem._particlePool[0].transform);
+        
     }
     
     render(context, canvas) {
@@ -35,8 +27,6 @@ class Title extends Entity2D {
             context.font = "12px Arcade";
             context.fillText("PRESS SPACE TO START", canvas.width/2, canvas.height - 120);
         }
-        
-        this.particleSystem.render(context, canvas);
     }
 
 }
@@ -73,20 +63,51 @@ class Boat extends Entity2D {
     constructor(engine) {
         super();
         this.engine = engine;
-        
-       
+    }
+    
+    startParticles() {
+        this.particleSystem = new BoatParticleSystem(this);
+        this.particleSystem.start();
     }
     
     update(delta) {
-        
+        this.particleSystem.update(delta);
     }
     
     render(context, canvas) {
         if (this.renderable == null) return;
+        
+        this.particleSystem.render(context, canvas);
+        
         var w = this.renderable.width;
         var h = this.renderable.height;
         var s = this.engine.game.foregroundImageScale.get();
         context.drawAnimation(this.renderable, this.transform.x - w*s/2, this.transform.y - h*s/2, w * s, h * s);
     }
     
+}
+
+class BoatParticleSystem extends CircleParticleSystem {
+    constructor(boat) {
+        super(1000, 100);
+        this.transform.position = boat.transform.position;
+        this.transform.rotation = boat.transform.rotation - Math.PI/2;
+        
+        this.posVar = new Vector2(boat.renderable.width/2, 0);
+        this.rotVar = Math.PI/45;
+        this.life = 10000;
+        
+        this.speed = 1.0;
+        this.speedVar = 0.2;
+        this.radius = 5.0;
+        this.radiusVar = 1.0;
+        this.endRadius = 5.0;
+        this.startColor = [0, 255, 255, 255];
+        this.endColor = [0, 255, 255, 255];
+    }
+    
+    update(delta) {
+        super.update(delta);
+        this.transform.rotation = boat.transform.rotation - Math.PI/2;
+    }
 }

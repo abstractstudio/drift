@@ -12,6 +12,7 @@ class MenuState extends State {
         var boat = this.entities.get("boat");
         boat.transform.position.x = canvas.width / 2;
         boat.transform.position.y = canvas.height / 2;
+        boat.startParticles();
         this.game.backgroundRate.set(0.2);
     }
     
@@ -21,6 +22,7 @@ class MenuState extends State {
         
         this.entities.get("water").update(delta);
         this.entities.get("title").update(delta);
+        this.entities.get("boat").update(delta);
     }
     
     render(context, canvas) {
