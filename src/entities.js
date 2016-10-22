@@ -1,5 +1,5 @@
 goog.require("engine.Entity2D")
-goog.require("engine.CircleParticleSystem")
+goog.require("engine.CircleParticleSystem2D")
 goog.provide("drift.Title");
 goog.provide("drift.Water");
 
@@ -87,17 +87,19 @@ class Boat extends Entity2D {
     
 }
 
-class BoatParticleSystem extends CircleParticleSystem {
+class BoatParticleSystem extends CircleParticleSystem2D {
+    
     constructor(boat) {
-        super(1000, 100);
+        super(null, 100);
+        this.boat = boat;
         this.transform.position = boat.transform.position;
         this.transform.rotation = boat.transform.rotation - Math.PI/2;
         
         this.posVar = new Vector2(boat.renderable.width/2, 0);
         this.rotVar = Math.PI/45;
-        this.life = 10000;
+        this.life = 300;
         
-        this.speed = 1.0;
+        this.speed = 0.2;
         this.speedVar = 0.2;
         this.radius = 5.0;
         this.radiusVar = 1.0;
@@ -108,6 +110,7 @@ class BoatParticleSystem extends CircleParticleSystem {
     
     update(delta) {
         super.update(delta);
-        this.transform.rotation = boat.transform.rotation - Math.PI/2;
+        this.transform.rotation = this.boat.transform.rotation - Math.PI/2;
     }
+    
 }
