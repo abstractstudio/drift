@@ -1,5 +1,5 @@
-goog.require("engine.Entity2D")
-goog.require("engine.CircleParticleSystem2D")
+goog.require("engine.Entity2D");
+goog.require("engine.CircleParticleSystem2D");
 goog.provide("drift.Title");
 goog.provide("drift.Water");
 
@@ -90,27 +90,33 @@ class Boat extends Entity2D {
 class BoatParticleSystem extends CircleParticleSystem2D {
     
     constructor(boat) {
-        super(null, 100);
+        super(512, 0.07);
         this.boat = boat;
-        this.transform.position = boat.transform.position;
-        this.transform.rotation = boat.transform.rotation - Math.PI/2;
         
-        this.posVar = new Vector2(boat.renderable.width/2, 0);
-        this.rotVar = Math.PI/45;
-        this.life = 300;
+        this.transform.position = this.boat.transform.position.copy().add(new Vector2D(0, this.boat.renderable.height/2 + 8));
+        this.positionVariation = new Vector2D(boat.renderable.width/2 + 5, 0);
+        this.transform.rotation = boat.transform.rotation - 3*Math.PI/2;
+        this.rotationVariation = 25 * Math.PI/180;
         
-        this.speed = 0.2;
-        this.speedVar = 0.2;
-        this.radius = 5.0;
-        this.radiusVar = 1.0;
-        this.endRadius = 5.0;
-        this.startColor = [0, 255, 255, 255];
-        this.endColor = [0, 255, 255, 255];
+        this.baseSpeed = 0.5;
+        this.speedVariation = 0;
+        this.baseLife = 900;
+        this.lifeVariation = 300;
+        
+        this.baseRadius = 2.5;
+        this.baseRadiusVariation = 0.25;
+        this.endRadius = 0.5;
+        this.endRadiusVariation = 0.25;
+        
+        this.baseColor = [133, 193, 233, 128];
+        this.baseColorVariation = [10, 5, 0, 0];
+        this.endColor = [163, 233, 255, 0];
     }
     
     update(delta) {
         super.update(delta);
-        this.transform.rotation = this.boat.transform.rotation - Math.PI/2;
+        this.transform.x = this.boat.transform.x;
+        this.transform.rotation = this.boat.transform.rotation - 3*Math.PI/2;
     }
     
 }
