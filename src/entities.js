@@ -1,5 +1,5 @@
 goog.require("engine.Entity2D");
-goog.require("engine.CircleParticleSystem2D");
+goog.require("engine.SquareParticleSystem2D");
 goog.provide("drift.Title");
 goog.provide("drift.Water");
 
@@ -87,10 +87,10 @@ class Boat extends Entity2D {
     
 }
 
-class BoatParticleSystem extends CircleParticleSystem2D {
+class BoatParticleSystem extends SquareParticleSystem2D {
     
     constructor(boat) {
-        super(512, 0.07);
+        super(300, 0.05);
         this.boat = boat;
         
         this.transform.position = this.boat.transform.position.copy().add(new Vector2D(0, this.boat.renderable.height/2 + 8));
@@ -100,13 +100,13 @@ class BoatParticleSystem extends CircleParticleSystem2D {
         
         this.baseSpeed = 0.5;
         this.speedVariation = 0;
-        this.baseLife = 900;
+        this.baseLife = 1000;
         this.lifeVariation = 300;
         
-        this.baseRadius = 2.5;
-        this.baseRadiusVariation = 0.25;
-        this.endRadius = 0.5;
-        this.endRadiusVariation = 0.25;
+        this.baseLength = 5;
+        this.baseLengthVariation = 0.25;
+        this.endLength = 0.25;
+        this.endLengthVariation = 0.25;
         
         this.baseColor = [133, 193, 233, 128];
         this.baseColorVariation = [10, 5, 0, 0];
@@ -118,5 +118,4 @@ class BoatParticleSystem extends CircleParticleSystem2D {
         this.transform.x = this.boat.transform.x;
         this.transform.rotation = this.boat.transform.rotation - 3*Math.PI/2;
     }
-    
 }
