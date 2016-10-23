@@ -7,7 +7,6 @@ goog.provide("drift.PlayState");
 class MenuState extends State {
     
     start() {
-        this.startingAnimation = false;
         var canvas = this.engine.canvas;
         var boat = this.entities.get("boat");
         boat.transform.position.x = canvas.width / 2;
@@ -18,16 +17,21 @@ class MenuState extends State {
     
     update(delta) {
         if (this.input.keyboard[KEY.SPACE])
-            this.startingAnimation = true;
+            this.startingAnimationTime = Date.now();
+        if (this.startingAnimationTime) {
+            var difference = Date.now() - this.startingAnimationTime;
+            if (difference > 2000) this.engine.states.go("play");
+            this.entities.get("boat").transform.y += 2 * Math.abs(Math.sin(Math.PI * difference / 2000));
+        }
         
         this.entities.get("water").update(delta);
-        this.entities.get("title").update(delta);
         this.entities.get("boat").update(delta);
     }
     
     render(context, canvas) {
         this.entities.get("water").render(context, canvas);
-        this.entities.get("title").render(context, canvas);
+        if (!this.startingAnimationTime)
+            this.entities.get("title").render(context, canvas);
         this.entities.get("boat").render(context, canvas);
     }
     

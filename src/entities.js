@@ -51,7 +51,7 @@ class Water extends Entity2D {
         context.drawImage(this.renderable, 0, 0, w / bgir, h1 / bgir, 0, this.scroll, w, h1);
         if (h2) context.drawImage(this.renderable, 0, h1 / bgir, w / bgir, h2 / bgir, 0, 0, w, h2);
     }
-        
+
 }
 
 class Boat extends Entity2D {
@@ -68,6 +68,8 @@ class Boat extends Entity2D {
     
     update(delta) {
         this.particleSystem.update(delta);
+        this.particleSystem.transform.x = this.transform.x;
+        this.particleSystem.transform.y = this.transform.y;
     }
     
     render(context, canvas) {
