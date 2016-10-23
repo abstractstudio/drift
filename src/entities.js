@@ -12,10 +12,6 @@ class Title extends Entity2D {
         this.transform.y = 100;
     }
     
-    update(delta) {
-        
-    }
-    
     render(context, canvas) {
         context.textAlign = "center";         
         context.fillStyle = "black";
@@ -87,26 +83,36 @@ class Boat extends Entity2D {
     
 }
 
+class SprayParticle extends SquareParticle2D { 
+    
+    update(delta) {
+        super.update(delta);
+        this.velocity.y += 0.01;
+    }
+    
+}
+
 class BoatParticleSystem extends SquareParticleSystem2D {
     
     constructor(boat) {
-        super(300, 0.05);
+        super(500, 1000, SprayParticle.prototype.constructor);
         this.boat = boat;
         
-        this.transform.position = this.boat.transform.position.copy().add(new Vector2D(0, this.boat.renderable.height/2 + 8));
+        this.transform.position = this.boat.transform.position.copy().add(new Vector2D(0, this.boat.renderable.height/2));
         this.positionVariation = new Vector2D(boat.renderable.width/2 + 5, 0);
         this.transform.rotation = boat.transform.rotation - 3*Math.PI/2;
-        this.rotationVariation = 25 * Math.PI/180;
+        this.rotationVariation = 0.15 * Math.PI;
         
-        this.baseSpeed = 0.5;
+        this.baseSpeed = 0.75;
         this.speedVariation = 0;
-        this.baseLife = 1000;
+        this.baseLife = 1300;
         this.lifeVariation = 300;
+        this.positionVariation = new Vector2D(20, 0);
         
         this.baseLength = 5;
         this.baseLengthVariation = 0.25;
-        this.endLength = 0.25;
-        this.endLengthVariation = 0.25;
+        this.endLength = 2;
+        this.endLengthVariation = 1;
         
         this.baseColor = [133, 193, 233, 128];
         this.baseColorVariation = [10, 5, 0, 0];
@@ -118,4 +124,5 @@ class BoatParticleSystem extends SquareParticleSystem2D {
         this.transform.x = this.boat.transform.x;
         this.transform.rotation = this.boat.transform.rotation - 3*Math.PI/2;
     }
+    
 }
