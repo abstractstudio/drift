@@ -21,7 +21,7 @@ class Title extends Entity2D {
         context.fillText("Created by Abstract Studio", this.transform.x, this.transform.y + 30);
         if (Math.floor(Date.now() / 500) % 2 == 0) {
             context.font = "12px Arcade";
-            context.fillText("PRESS SPACE TO START", canvas.width/2, canvas.height - 120);
+            context.fillText("PRESS SPACE TO START", canvas.width/2, this.transform.y + 80);
         }
     }
 
@@ -61,21 +61,21 @@ class Boat extends Entity2D {
         this.engine = engine;
     }
     
-    startParticles() {
-        this.particleSystem = new BoatParticleSystem(this);
-        this.particleSystem.start();
+    particles() {
+        this.wake = new WakeParticleSystem(this);
+        this.wake.start();
     }
     
     update(delta) {
-        this.particleSystem.update(delta);
-        this.particleSystem.transform.x = this.transform.x;
-        this.particleSystem.transform.y = this.transform.y;
+        this.wake.update(delta);
+        this.wake.transform.x = this.transform.x;
+        this.wake.transform.y = this.transform.y;
     }
     
     render(context, canvas) {
         if (this.renderable == null) return;
         
-        this.particleSystem.render(context, canvas);
+        this.wake.render(context, canvas);
         
         var w = this.renderable.width;
         var h = this.renderable.height;
@@ -85,19 +85,19 @@ class Boat extends Entity2D {
     
 }
 
-class SprayParticle extends SquareParticle2D { 
+class WakeParticle extends SquareParticle2D { 
     
     update(delta) {
         super.update(delta);
-        this.velocity.y += 0.01;
+        this.velocity.y += 0.02;
     }
     
 }
 
-class BoatParticleSystem extends SquareParticleSystem2D {
+class WakeParticleSystem extends SquareParticleSystem2D {
     
     constructor(boat) {
-        super(500, 1000, SprayParticle.prototype.constructor);
+        super(500, 1000, WakeParticle.prototype.constructor);
         this.boat = boat;
         
         this.transform.position = this.boat.transform.position.copy().add(new Vector2D(0, this.boat.renderable.height/2));
@@ -105,7 +105,7 @@ class BoatParticleSystem extends SquareParticleSystem2D {
         this.transform.rotation = boat.transform.rotation - 3*Math.PI/2;
         this.rotationVariation = 0.15 * Math.PI;
         
-        this.baseSpeed = 0.75;
+        this.baseSpeed = 0.5;
         this.speedVariation = 0;
         this.baseLife = 1300;
         this.lifeVariation = 300;

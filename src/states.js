@@ -10,28 +10,19 @@ class MenuState extends State {
         var canvas = this.engine.canvas;
         var boat = this.entities.get("boat");
         boat.transform.position.x = canvas.width / 2;
-        boat.transform.position.y = canvas.height / 2;
-        boat.startParticles();
-        this.game.backgroundRate.set(0.2);
+        boat.transform.position.y = 3 * canvas.height / 4;
+        boat.particles();
     }
     
     update(delta) {
-        if (this.input.keyboard[KEY.SPACE])
-            this.startingAnimationTime = Date.now();
-        if (this.startingAnimationTime) {
-            var difference = Date.now() - this.startingAnimationTime;
-            if (difference > 2000) this.engine.states.go("play");
-            this.entities.get("boat").transform.y += 2 * Math.abs(Math.sin(Math.PI * difference / 2000));
-        }
-        
+        if (this.input.keyboard[KEY.SPACE]) this.states.go("play");
         this.entities.get("water").update(delta);
         this.entities.get("boat").update(delta);
     }
     
     render(context, canvas) {
         this.entities.get("water").render(context, canvas);
-        if (!this.startingAnimationTime)
-            this.entities.get("title").render(context, canvas);
+        this.entities.get("title").render(context, canvas);
         this.entities.get("boat").render(context, canvas);
     }
     
