@@ -36,7 +36,8 @@ class MenuState extends State {
 class PlayState extends State {
 
     start() {
-        
+        this.game.backgroundRate = 1;
+        this.entities.get("boat").wake.intensity = 0.015;
     }
     
     update(delta) {

@@ -87,7 +87,7 @@ class WakeParticle extends SquareParticle2D {
     
     update(delta) {
         super.update(delta);
-        this.velocity.y += 0.001;
+        this.velocity.y += this.system.intensity;
     }
     
 }
@@ -95,8 +95,10 @@ class WakeParticle extends SquareParticle2D {
 class WakeParticleSystem extends SquareParticleSystem2D {
     
     constructor(boat) {
-        super(400, 75, WakeParticle.prototype.constructor);
+        super(400, 100, WakeParticle.prototype.constructor);
         this.boat = boat;
+        
+        this.intensity = 0.001;
         
         this.transform.position = this.boat.transform.position.copy()
         this.positionVariation = new Vector2D(15, 10);
