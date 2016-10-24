@@ -12,6 +12,7 @@ class MenuState extends State {
         boat.transform.position.x = canvas.width / 2;
         boat.transform.position.y = 3 * canvas.height / 4;
         boat.particles();
+        this.game.backgroundRate = 0.2;
     }
     
     update(delta) {

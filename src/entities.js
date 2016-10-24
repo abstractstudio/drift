@@ -36,8 +36,8 @@ class Water extends Entity2D {
     }
     
     update(delta) {
-        var b = this.engine.game.backgroundRate.get();
-        var g = this.engine.game.globalRate.get();
+        var b = this.engine.game.backgroundRate;
+        var g = this.engine.game.globalRate;
         var h = this.engine.canvas.height;
         this.scroll = (this.scroll + b * (false ? g : 1) * delta/8) % h;
     }
@@ -47,7 +47,7 @@ class Water extends Entity2D {
         var h1 = canvas.height - this.scroll;
         var h2 = this.scroll + 1;
         var w = canvas.width;
-        var bgir = this.engine.game.backgroundImageScale.get();
+        var bgir = this.engine.game.backgroundImageScale;
         context.drawImage(this.renderable, 0, 0, w / bgir, h1 / bgir, 0, this.scroll, w, h1);
         if (h2) context.drawImage(this.renderable, 0, h1 / bgir, w / bgir, h2 / bgir, 0, 0, w, h2);
     }
@@ -79,7 +79,7 @@ class Boat extends Entity2D {
         
         var w = this.renderable.width;
         var h = this.renderable.height;
-        var s = this.engine.game.foregroundImageScale.get();
+        var s = this.engine.game.foregroundImageScale;
         context.drawAnimation(this.renderable, this.transform.x - w*s/2, this.transform.y - h*s/2, w * s, h * s);
     }
     

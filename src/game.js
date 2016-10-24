@@ -9,56 +9,33 @@ stacked modifications which can be discretely add, inserted, or removed.
 
 */
 
-class Property extends EventInterface {
-    
-    constructor(base) {
-        super();
-        this.type = typeof base;
-        this.base = base;
-        this.reset();
-    }
-    
-    reset() { this.set(this.base); }
-    
-    set(value) { 
-        this.value = value;
-        this.fireEvent("set", value);
-        return this.value;
-    }
-    
-    get() { return this.value; }
-    
-    increment(value) { this.set(this.value + value); }
-    
-}
-
 class Game {
     
     constructor() {
         
-        this.globalRate = new Property(1);
-        this.targetGlobalRate = new Property(1)
-        this.backgroundRate = new Property(1);
-        this.boatRate = new Property(1);
-        this.obstacleRate = new Property(1);
+        this.globalRate = 1;
+        this.targetGlobalRate = 1;
+        this.backgroundRate = 1;
+        this.boatRate = 1;
+        this.obstacleRate = 1;
         
-        this.backgroundImageScale = new Property(6);
-        this.foregroundImageScale = new Property(2.4);
+        this.backgroundImageScale = 6;
+        this.foregroundImageScale = 2.4;
         
-        this.boatHorizontalAcceleration = new Property(0.03);
-        this.boatRotationalAcceleration = new Property(0.04);
+        this.boatHorizontalAcceleration = 0.03;
+        this.boatRotationalAcceleration = 0.04;
         
-        this.difficulty = new Property(10);
-        this.score = new Property(0);
-        this.boost = new Property(100);
-        this.gameBoatY = new Property(500);
+        this.difficulty = 10;
+        this.score = 0;
+        this.boost = 100;
+        this.gameBoatY = 500;
         
-        this.lastSkillBonus = new Property(0);
-        this.skillBonusCount = new Property(0);
+        this.lastSkillBonus = 0;
+        this.skillBonusCount = 0;
         
-        this.showDisplay = new Property(true);
+        this.showDisplay = true;
         
-        this.boostDepletion = new Property(1/8);
+        this.boostDepletion = 1/8;
         
     }
     
