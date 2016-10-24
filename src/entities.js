@@ -68,8 +68,6 @@ class Boat extends Entity2D {
     
     update(delta) {
         this.wake.update(delta);
-        this.wake.transform.x = this.transform.x;
-        this.wake.transform.y = this.transform.y;
     }
     
     render(context, canvas) {
@@ -89,7 +87,7 @@ class WakeParticle extends SquareParticle2D {
     
     update(delta) {
         super.update(delta);
-        this.velocity.y += 0.02;
+        this.velocity.y += 0.001;
     }
     
 }
@@ -97,23 +95,22 @@ class WakeParticle extends SquareParticle2D {
 class WakeParticleSystem extends SquareParticleSystem2D {
     
     constructor(boat) {
-        super(500, 1000, WakeParticle.prototype.constructor);
+        super(400, 75, WakeParticle.prototype.constructor);
         this.boat = boat;
         
-        this.transform.position = this.boat.transform.position.copy().add(new Vector2D(0, this.boat.renderable.height/2));
-        this.positionVariation = new Vector2D(boat.renderable.width/2 + 5, 0);
-        this.transform.rotation = boat.transform.rotation - 3*Math.PI/2;
-        this.rotationVariation = 0.15 * Math.PI;
+        this.transform.position = this.boat.transform.position.copy()
+        this.positionVariation = new Vector2D(15, 10);
+        this.transform.rotation = this.boat.transform.rotation - 3*Math.PI/2;
+        this.rotationVariation = 0.2 * Math.PI;
         
         this.baseSpeed = 0.5;
         this.speedVariation = 0;
-        this.baseLife = 1300;
-        this.lifeVariation = 300;
-        this.positionVariation = new Vector2D(20, 0);
+        this.baseLife = 2000;
+        this.lifeVariation = 0;
         
         this.baseLength = 5;
         this.baseLengthVariation = 0.25;
-        this.endLength = 2;
+        this.endLength = 3;
         this.endLengthVariation = 1;
         
         this.baseColor = [133, 193, 233, 128];
@@ -123,8 +120,10 @@ class WakeParticleSystem extends SquareParticleSystem2D {
     
     update(delta) {
         super.update(delta);
-        this.transform.x = this.boat.transform.x;
-        this.transform.rotation = this.boat.transform.rotation - 3*Math.PI/2;
+        var r = this.boat.transform.r - 3*Math.PI/2;
+        this.transform.x = this.boat.transform.x + 30 * Math.cos(r);
+        this.transform.y = this.boat.transform.y + 30 * Math.sin(r);
+        this.transform.rotation = r;
     }
     
 }
