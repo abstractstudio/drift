@@ -58,6 +58,8 @@ class PlayState extends State {
             boat.renderable.frame(1);
         }
         
+        boat.move(delta);
+        
         this.entities.get("water").update(delta);
         this.entities.get("boat").update(delta);
     }

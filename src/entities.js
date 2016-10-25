@@ -3,6 +3,10 @@ goog.require("engine.SquareParticleSystem2D");
 goog.provide("drift.Title");
 goog.provide("drift.Water");
 
+function bound(n, l, u) {
+    return Math.min(u, Math.max(l, n));
+}
+
 class Title extends Entity2D {
 
     constructor(engine) {
@@ -58,6 +62,7 @@ class Boat extends Entity2D {
     constructor(engine) {
         super();
         this.engine = engine;
+        this.v = 0;
     }
     
     particles() {
@@ -85,6 +90,16 @@ class Boat extends Entity2D {
     turn(delta) {
         var r = this.engine.game.boatRotationalAcceleration * this.engine.game.speed * delta/16;
         this.transform.r = Math.max(-Math.PI/6, Math.min(this.transform.r+r, Math.PI/3));
+    }
+    
+    move(delta) {
+        var a = this.engine.game.boatHorizontalAcceleration;
+        this.v = bound(this.v+Math.sin(this.transform.r)*a, -1.5, 1.5);
+        //this.v -= Math.sin(this.rot) * (this.temp.boost || 0);
+        var m = this.v * this.engine.game.speed * delta/16;
+        this.transform.x = bound(this.transform.x+m, 30, this.engine.canvas.width - 30);
+        if (this.transform.x == 30 || this.transform.x == this.engine.canvas.width - 30) 
+            this.xv = 0;
     }
     
 }
