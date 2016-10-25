@@ -12,7 +12,7 @@ class MenuState extends State {
         boat.transform.position.x = canvas.width / 2;
         boat.transform.position.y = 3 * canvas.height / 4;
         boat.particles();
-        this.game.backgroundRate = 0.2;
+        this.game.speed = this.game.targetSpeed = 0.2;
     }
     
     update(delta) {
@@ -36,11 +36,28 @@ class MenuState extends State {
 class PlayState extends State {
 
     start() {
-        this.game.backgroundRate = 1;
+        this.game.targetSpeed = 1;
         this.entities.get("boat").wake.intensity = 0.015;
     }
     
     update(delta) {
+        this.game.update(delta);
+        
+        var boat = this.entities.get("boat");
+        var keyboard = this.input.keyboard;
+        var left = keyboard[KEY.LEFT] || keyboard[KEY.A];
+        var right = keyboard[KEY.RIGHT] || keyboard[KEY.D];
+        
+        if (left && !right) {
+            boat.turn(-delta);
+            boat.renderable.frame(0);
+        } else if (right && !left) {
+            boat.turn(delta);
+            boat.renderable.frame(2);
+        } else {
+            boat.renderable.frame(1);
+        }
+        
         this.entities.get("water").update(delta);
         this.entities.get("boat").update(delta);
     }

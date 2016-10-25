@@ -13,22 +13,18 @@ class Game {
     
     constructor() {
         
-        this.globalRate = 1;
-        this.targetGlobalRate = 1;
-        this.backgroundRate = 1;
-        this.boatRate = 1;
-        this.obstacleRate = 1;
+        this.speed = 1.0;
+        this.targetSpeed = 1.0;
         
         this.backgroundImageScale = 6;
         this.foregroundImageScale = 2.4;
         
         this.boatHorizontalAcceleration = 0.03;
-        this.boatRotationalAcceleration = 0.04;
+        this.boatRotationalAcceleration = 0.005;
         
         this.difficulty = 10;
         this.score = 0;
         this.boost = 100;
-        this.gameBoatY = 500;
         
         this.lastSkillBonus = 0;
         this.skillBonusCount = 0;
@@ -42,10 +38,10 @@ class Game {
     update(delta) {
         
         /* Interpolate to target rate. */
-        var g = this.globalRate.get();
-        var t = this.targetGlobalRate.get();
-        if (g > t) this.globalRate.set(Math.max(t, g-delta/16*0.05));
-        else if (g < t) this.globalRate.set(Math.min(t, g+delta/16*0.05));
+        var g = this.speed;
+        var t = this.targetSpeed;
+        if (g > t) this.speed = Math.max(t, g-delta/16*0.02);
+        else if (g < t) this.speed = Math.min(t, g+delta/16*0.02);
         
     }
     
