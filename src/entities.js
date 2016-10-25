@@ -99,7 +99,7 @@ class Boat extends Entity2D {
         var m = this.v * this.engine.game.speed * delta/16;
         this.transform.x = bound(this.transform.x+m, 30, this.engine.canvas.width - 30);
         if (this.transform.x == 30 || this.transform.x == this.engine.canvas.width - 30) 
-            this.xv = 0;
+            this.v = 0;
     }
     
 }
