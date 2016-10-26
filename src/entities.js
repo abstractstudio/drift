@@ -2,6 +2,8 @@ goog.require("engine.Entity2D");
 goog.require("engine.SquareParticleSystem2D");
 goog.provide("drift.Title");
 goog.provide("drift.Water");
+goog.provide("drift.Boat");
+goog.provide("drift.Obstacle");
 
 function bound(n, l, u) {
     return Math.min(u, Math.max(l, n));
@@ -55,6 +57,74 @@ class Water extends Entity2D {
         if (h2) context.drawImage(this.renderable, 0, h1 / bgir, w / bgir, h2 / bgir, 0, 0, w, h2);
     }
 
+}
+
+class Obstacle extends Entity2D {
+    
+    constructor(engine) {
+        super();
+        this.engine = engine;
+        
+        /* Movement. */
+        this.radius = 0;
+        this.yv = 2;
+        
+        /* Identification. */
+        this.obstacleNumber = Math.floor(Math.random() * 5);
+        
+        this.randomize();
+    }
+    
+    /** Respawn the obstacle. */
+	respawn() {
+		/* Randomize the position and obstacle type. */
+		this.randomize();
+        
+		var obstacles = this.engine.entities.get("obstacles");
+        for (var i = 0; i < obstacles.length; i++) {	
+			/* Get the obstacle. */
+			var obstacle = obstacles[i];
+			if (!obstacle) continue;
+						
+			/* Skip if comparing to self. */
+            if (obstacle === this) continue;
+						
+            /* Fail and send to bottom if colliding with another or too close. */
+            if (Vector2D.distance(this.transform.position, obstacle.transform.position) < this.radius + obstacle.radius + this.engine.entities.get("boat").height * Math.sqrt(this.engine.game.speed*1.2)) {
+                this.transform.y = this.engine.canvas.height + this.radius + 1;
+				break;
+            }
+			
+        }
+		
+	}
+	
+	/** Randomize the obstacle. */
+	randomize() {
+        this.radius = Math.random()*10 + 20;
+        this.width = this.height = this.radius*2;
+        this.transform.r = Math.random() * 2 * Math.PI;
+        this.transform.x = Math.random() * (this.engine.canvas.width-50) + 25;
+        this.transform.y = -Math.random() * this.engine.canvas.height - this.radius;
+        this.obstacleNumber = Math.floor(Math.random() * 5);
+	    this.radius -= 2;
+	}
+    
+    update(delta) {
+        this.transform.y += this.yv * this.engine.game.obstacleSpeed * this.engine.game.speed * delta/16;
+        if (this.transform.y > this.engine.canvas.height + this.radius && delta != 0) this.respawn();
+    }
+    
+    render(context, canvas) {
+        if (this.renderable == null) return;
+        this.renderable.frame(this.obstacleNumber);
+        
+        context.save();
+        context.translate(this.transform.x, this.transform.y);
+        context.rotate(this.transform.r);
+        context.drawAnimation(this.renderable, -this.radius/2, -this.radius/2, this.radius, this.radius);
+        context.restore();
+    }
 }
 
 class Boat extends Entity2D {

@@ -62,11 +62,18 @@ class PlayState extends State {
         
         this.entities.get("water").update(delta);
         this.entities.get("boat").update(delta);
+        var obstacles = this.entities.get("obstacles");
+        for (var i = 0; i < obstacles.length; i++) {
+            obstacles[i].update(delta);
+        }
     }
     
     render(context, canvas) {
         this.entities.get("water").render(context, canvas);
         this.entities.get("boat").render(context, canvas);
+        var obstacles = this.entities.get("obstacles");
+        for (var i = 0; i < obstacles.length; i++)
+            obstacles[i].render(context, canvas);
     }
        
 }
