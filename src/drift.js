@@ -18,6 +18,11 @@ class Drift extends Engine2D {
         this.assets.queue("water", IMAGE, "assets/water.png");
         this.assets.queue("boat", ANIMATION, "assets/boat.png", {frameIndex: 1, columns: 3});
         this.assets.queue("obstacles", ANIMATION, "assets/obstacles2.png", {rows: 2, columns: 3});
+        var that = this;
+        window.addEventListener("blur", function() { 
+            if (that.states.current == "play") 
+                that.states.go("pause"); 
+        });
     }
     
     load() {
