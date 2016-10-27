@@ -59,18 +59,17 @@ class Water extends Entity2D {
 
 }
 
+
 class Obstacle extends Entity2D {
     
-    constructor(engine) {
+    constructor(engine, sheet) {
         super();
         this.engine = engine;
+        this.renderable = sheet;
         
         /* Movement. */
         this.radius = 0;
         this.yv = 2;
-        
-        /* Identification. */
-        this.obstacleNumber = Math.floor(Math.random() * 5);
         
         this.randomize();
     }
@@ -106,7 +105,7 @@ class Obstacle extends Entity2D {
         this.transform.r = Math.random() * 2 * Math.PI;
         this.transform.x = Math.random() * (this.engine.canvas.width-50) + 25;
         this.transform.y = -Math.random() * this.engine.canvas.height - this.radius;
-        this.obstacleNumber = Math.floor(Math.random() * 5);
+        if (this.renderable) this.renderable.frame(Math.floor(Math.random() * 5));
 	    this.radius -= 2;
 	}
     
@@ -117,8 +116,6 @@ class Obstacle extends Entity2D {
     
     render(context, canvas) {
         if (this.renderable == null) return;
-        this.renderable.frame(this.obstacleNumber);
-        
         context.save();
         context.translate(this.transform.x, this.transform.y);
         context.rotate(this.transform.r);
@@ -126,6 +123,7 @@ class Obstacle extends Entity2D {
         context.restore();
     }
 }
+
 
 class Boat extends Entity2D {
     

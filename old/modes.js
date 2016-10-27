@@ -1,1 +1,0 @@
-goog.provide("drift.Mode");

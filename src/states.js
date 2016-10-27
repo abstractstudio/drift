@@ -45,6 +45,10 @@ class PlayState extends State {
         
         var boat = this.entities.get("boat");
         var keyboard = this.input.keyboard;
+        
+        if (keyboard[KEY.ESCAPE] == BUTTON.PRESSED)
+            this.states.go("pause");
+        
         var left = keyboard[KEY.LEFT] || keyboard[KEY.A];
         var right = keyboard[KEY.RIGHT] || keyboard[KEY.D];
         
@@ -76,6 +80,22 @@ class PlayState extends State {
             obstacles[i].render(context, canvas);
     }
        
+}
+
+class PauseState extends PlayState {
+    
+    update(delta) {
+        if (this.input.keyboard[KEY.ESCAPE] == BUTTON.PRESSED) {
+            this.states.go("play");
+        }
+    }
+    
+    render(context, canvas) {
+        super.render(context, canvas);
+        context.textAlign = "center";
+        context.fillText("PRESS ESCAPE TO CONTINUE", canvas.width/2, canvas.height/2);
+    }
+    
 }
 
 
