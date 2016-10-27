@@ -38,9 +38,9 @@ class Game {
         this.mode = "NORMAL";
         this.modes = ["NORMAL", "FAST"];
         
-        this.boatRotationSpeeds = {NORMAL: 0.005, FAST: 0.007};
-        this.boatAccelerations = {NORMAL: 0.03, FAST: 0.04};
-        this.wakeIntensities = {NORMAL: 0.015, FAST: 0.1};
+        this.boatRotationSpeeds = {NORMAL: 0.005, FAST: 0.0055};
+        this.boatAccelerations = {NORMAL: 0.03, FAST: 0.03};
+        this.wakeIntensities = {NORMAL: 0.015, FAST: 0.09};
         this.speeds = {NORMAL: 1, FAST: 2.5};
         
     }
