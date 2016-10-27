@@ -59,6 +59,11 @@
             var hidden = false;
             var description = document.getElementById("description");
             var button = document.getElementById("button");
+            document.addEventListener("keydown", function(e) {
+                if (e.charCode == 27 || e.charCode == 32 || e.charCode == 0) {
+                    e.preventDefault();
+                }
+            });
             
             function hideDescription() {
                 hidden = true;
