@@ -19,8 +19,8 @@ class Game {
         this.backgroundImageScale = 6;
         this.foregroundImageScale = 2.4;
         
-        this.boatHorizontalAcceleration = 0.03;
-        this.boatRotationalAcceleration = 0.005;
+        this.boatAcceleration = 0.03;
+        this.boatRotationSpeed = 0.005;
         
         this.obstacleSpeed = 1.0;
         
@@ -34,6 +34,14 @@ class Game {
         this.showDisplay = true;
         
         this.boostDepletion = 1/8;
+        
+        this.mode = "NORMAL";
+        this.modes = ["NORMAL", "FAST"];
+        
+        this.boatRotationSpeeds = {NORMAL: 0.005, FAST: 0.007};
+        this.boatAccelerations = {NORMAL: 0.03, FAST: 0.04};
+        this.wakeIntensities = {NORMAL: 0.015, FAST: 0.1};
+        this.speeds = {NORMAL: 1, FAST: 2.5};
         
     }
     

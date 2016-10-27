@@ -4,6 +4,11 @@ goog.provide("drift.MenuState");
 goog.provide("drift.PlayState");
 //goog.provide("drift.MenuPlayTransition");
 
+function inside(v, l, r, b, t) {
+    return l <= v.x && v.x <= r && b <= v.y && v.y <= t;
+}
+
+
 class MenuState extends State {
     
     start() {
@@ -19,6 +24,14 @@ class MenuState extends State {
         if (this.input.keyboard[KEY.SPACE]) this.states.go("play");
         this.entities.get("water").update(delta);
         this.entities.get("boat").update(delta);
+        if (this.input.mouse[MOUSE.LEFT] == BUTTON.PRESSED) {
+            if (inside(this.input.mouse, this.engine.canvas.width - 100, this.engine.canvas.width, 0, 30)) {
+                var m = this.game.mode;
+                var ms = this.game.modes;
+                this.game.mode = ms[(ms.indexOf(m) + 1) % ms.length];
+                console.log(this.game.mode);
+            }
+        }
     }
     
     render(context, canvas) {
@@ -36,8 +49,10 @@ class MenuState extends State {
 class PlayState extends State {
 
     start() {
-        this.game.targetSpeed = 1;
-        this.entities.get("boat").wake.intensity = 0.015;
+        this.game.targetSpeed = this.game.speeds[this.game.mode];
+        this.game.boatRotationSpeed = this.game.boatRotationSpeeds[this.game.mode];
+        this.game.boatAcceleration = this.game.boatAccelerations[this.game.mode];
+        var boat = this.entities.get("boat").wake.intensity = this.game.wakeIntensities[this.game.mode];
     }
     
     update(delta) {
@@ -64,6 +79,8 @@ class PlayState extends State {
         
         boat.move(delta);
         
+        this.engine.game.score += delta/500;
+        
         this.entities.get("water").update(delta);
         this.entities.get("boat").update(delta);
         var obstacles = this.entities.get("obstacles");
@@ -78,6 +95,10 @@ class PlayState extends State {
         var obstacles = this.entities.get("obstacles");
         for (var i = 0; i < obstacles.length; i++)
             obstacles[i].render(context, canvas);
+        context.textBaseline = "top";
+        context.textAlign = "center";
+        context.font = "24px Arcade";
+        context.fillText(Math.floor(this.game.score), canvas.width/2, 40);
     }
        
 }
@@ -93,6 +114,7 @@ class PauseState extends PlayState {
     render(context, canvas) {
         super.render(context, canvas);
         context.textAlign = "center";
+        context.font = "12px Arcade";
         context.fillText("PRESS ESCAPE TO CONTINUE", canvas.width/2, canvas.height/2);
     }
     
