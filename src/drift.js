@@ -35,6 +35,7 @@ class Drift extends Engine2D {
         this.entities.add("water", water);
         var boat = new Boat(this);
         boat.renderable = this.assets.get("boat");
+        boat.particles();
         boat.reset();
         this.entities.add("boat", boat);
         var obstacles = [];

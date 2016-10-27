@@ -81,6 +81,7 @@ class Obstacle extends Entity2D {
     
     /** Respawn the obstacle. */
 	respawn() {
+        
 		/* Randomize the position and obstacle type. */
 		this.randomize();
         
@@ -160,11 +161,11 @@ class Boat extends Entity2D {
         this.collider.width = this.renderable.width * this.engine.game.foregroundImageScale;
         this.collider.height = (this.renderable.height - 6) * this.engine.game.foregroundImageScale;
         this.dead = false;
+        this.wake.start();
     }
     
     particles() {
         this.wake = new WakeParticleSystem(this);
-        this.wake.start();
     }
     
     update(delta) {

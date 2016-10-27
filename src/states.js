@@ -18,7 +18,6 @@ class MenuState extends State {
         var boat = this.entities.get("boat");
         boat.transform.position.x = canvas.width / 2;
         boat.transform.position.y = 3 * canvas.height / 4;
-        boat.particles();
         boat.reset();
         this.game.speed = this.game.targetSpeed = 0.2;
     }
@@ -55,20 +54,9 @@ class PlayState extends State {
         this.game.targetSpeed = this.game.speeds[this.game.mode];
         this.game.boatRotationSpeed = this.game.boatRotationSpeeds[this.game.mode];
         this.game.boatAcceleration = this.game.boatAccelerations[this.game.mode];
-        
-        // Reset boat
         var boat = this.entities.get("boat");
         boat.wake.intensity = this.game.wakeIntensities[this.game.mode];
-        boat.transform.position.x = canvas.width / 2;
-        boat.transform.position.y = 3 * canvas.height / 4;
-        boat.reset();
-        boat.particles();
         
-        // Reset obstacles
-        var obstacles = this.entities.get("obstacles");
-        for (var i = 0; i < this.game.difficulty; i++) {
-            obstacles[i] = new Obstacle(this.engine, obstacles[i].renderable);
-        }
     }
     
     update(delta) {
@@ -77,8 +65,10 @@ class PlayState extends State {
         var boat = this.entities.get("boat");
         var keyboard = this.input.keyboard;
         
-        if (keyboard[KEY.ESCAPE] == BUTTON.PRESSED)
+        if (keyboard[KEY.ESCAPE] == BUTTON.PRESSED) {
             this.states.go("pause");
+            return;
+        }
         
         var left = keyboard[KEY.LEFT] || keyboard[KEY.A];
         var right = keyboard[KEY.RIGHT] || keyboard[KEY.D];
@@ -102,7 +92,6 @@ class PlayState extends State {
         var obstacles = this.entities.get("obstacles");
         for (var i = 0; i < obstacles.length; i++) {
             obstacles[i].update(delta);
-            
             if (boat.collider.collides(obstacles[i].collider)) {
                 boat.die();
             }
@@ -163,4 +152,19 @@ class GameOverState extends PlayState {
         context.font = "12px Arcade";
         context.fillText("PRESS SPACE TO PLAY AGAIN", canvas.width/2, canvas.height/2);
     }
+    
+    stop() {
+        var boat = this.entities.get("boat");
+        boat.transform.position.x = canvas.width / 2;
+        boat.transform.position.y = 3 * canvas.height / 4;
+        boat.wake.kill();
+        boat.reset();
+        this.game.score = 0;
+
+        var obstacles = this.entities.get("obstacles");
+        for (var i = 0; i < this.game.difficulty; i++) {
+            obstacles[i] = new Obstacle(this.engine, obstacles[i].renderable);
+        }
+    }
+    
 }
