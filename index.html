@@ -60,7 +60,7 @@
             var description = document.getElementById("description");
             var button = document.getElementById("button");
             document.addEventListener("keydown", function(e) {
-                if (e.charCode == 27 || e.charCode == 32 || e.charCode == 0) {
+                if (e.keyCode == 27 || e.keyCode == 32) {
                     e.preventDefault();
                 }
             });
