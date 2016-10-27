@@ -2,6 +2,8 @@ goog.require("engine.State");
 goog.require("engine.Transition");
 goog.provide("drift.MenuState");
 goog.provide("drift.PlayState");
+goog.provide("drift.PauseState");
+goog.provide("drift.GameOverState");
 //goog.provide("drift.MenuPlayTransition");
 
 function inside(v, l, r, b, t) {
@@ -17,6 +19,7 @@ class MenuState extends State {
         boat.transform.position.x = canvas.width / 2;
         boat.transform.position.y = 3 * canvas.height / 4;
         boat.particles();
+        boat.reset();
         this.game.speed = this.game.targetSpeed = 0.2;
     }
     
@@ -52,7 +55,20 @@ class PlayState extends State {
         this.game.targetSpeed = this.game.speeds[this.game.mode];
         this.game.boatRotationSpeed = this.game.boatRotationSpeeds[this.game.mode];
         this.game.boatAcceleration = this.game.boatAccelerations[this.game.mode];
-        var boat = this.entities.get("boat").wake.intensity = this.game.wakeIntensities[this.game.mode];
+        
+        // Reset boat
+        var boat = this.entities.get("boat");
+        boat.wake.intensity = this.game.wakeIntensities[this.game.mode];
+        boat.transform.position.x = canvas.width / 2;
+        boat.transform.position.y = 3 * canvas.height / 4;
+        boat.reset();
+        boat.particles();
+        
+        // Reset obstacles
+        var obstacles = this.entities.get("obstacles");
+        for (var i = 0; i < this.game.difficulty; i++) {
+            obstacles[i] = new Obstacle(this.engine, obstacles[i].renderable);
+        }
     }
     
     update(delta) {
@@ -78,14 +94,22 @@ class PlayState extends State {
         }
         
         boat.move(delta);
+        boat.update(delta);
         
         this.engine.game.score += delta/500;
-        
         this.entities.get("water").update(delta);
-        this.entities.get("boat").update(delta);
+       
         var obstacles = this.entities.get("obstacles");
         for (var i = 0; i < obstacles.length; i++) {
             obstacles[i].update(delta);
+            
+            if (boat.collider.collides(obstacles[i].collider)) {
+                boat.die();
+            }
+        }
+        
+        if (boat.dead) {
+            this.states.go("gameover");
         }
     }
     
@@ -121,3 +145,22 @@ class PauseState extends PlayState {
 }
 
 
+class GameOverState extends PlayState {
+    
+    start() {
+        // Do nothing
+    }
+    
+    update(delta) {
+        if (this.input.keyboard[KEY.SPACE] == BUTTON.PRESSED) {
+            this.states.go("play");
+        }
+    }
+    
+    render(context, canvas) {
+        super.render(context, canvas);
+        context.textAlign = "center";
+        context.font = "12px Arcade";
+        context.fillText("PRESS SPACE TO PLAY AGAIN", canvas.width/2, canvas.height/2);
+    }
+}

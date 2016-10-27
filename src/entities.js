@@ -1,5 +1,7 @@
 goog.require("engine.Entity2D");
 goog.require("engine.SquareParticleSystem2D");
+goog.require("engine.BoxCollider2D");
+goog.require("engine.CircleCollider2D");
 goog.provide("drift.Title");
 goog.provide("drift.Water");
 goog.provide("drift.Boat");
@@ -71,6 +73,9 @@ class Obstacle extends Entity2D {
         this.radius = 0;
         this.yv = 2;
         
+        /* Collisions. */
+        this.collider = new CircleCollider2D(this.transform, this.radius);
+        
         this.randomize();
     }
     
@@ -100,13 +105,14 @@ class Obstacle extends Entity2D {
 	
 	/** Randomize the obstacle. */
 	randomize() {
-        this.radius = Math.random()*10 + 20;
+        this.radius = Math.random()*10 + 10;
         this.width = this.height = this.radius*2;
         this.transform.r = Math.random() * 2 * Math.PI;
         this.transform.x = Math.random() * (this.engine.canvas.width-50) + 25;
         this.transform.y = -Math.random() * this.engine.canvas.height - this.radius;
         if (this.renderable) this.renderable.frame(Math.floor(Math.random() * 5));
-	    this.radius -= 2;
+        this.collider.transform = this.transform;
+        this.collider.radius = this.radius - 2;
 	}
     
     update(delta) {
@@ -119,8 +125,20 @@ class Obstacle extends Entity2D {
         context.save();
         context.translate(this.transform.x, this.transform.y);
         context.rotate(this.transform.r);
-        context.drawAnimation(this.renderable, -this.radius/2, -this.radius/2, this.radius, this.radius);
+        context.drawAnimation(this.renderable, -this.radius, -this.radius, this.radius * 2, this.radius * 2);
         context.restore();
+        
+        /*
+        // DEBUG - draws collider
+        context.save();
+        context.translate(this.collider.transform.x, this.collider.transform.y);
+        context.rotate(-this.rot);
+        context.fillStyle = "black";
+        context.beginPath();
+        context.arc(0, 0, this.collider.radius, 0, 2*Math.PI);
+        context.stroke();
+        context.restore();
+        */
     }
 }
 
@@ -131,6 +149,17 @@ class Boat extends Entity2D {
         super();
         this.engine = engine;
         this.v = 0;
+        this.collider = new BoxCollider2D(this.transform, 0, 0);
+        this.dead = false;
+    }
+    
+    reset() {
+        this.v = 0;
+        this.transform.r = 0;
+        this.collider.transform = this.transform;
+        this.collider.width = this.renderable.width * this.engine.game.foregroundImageScale;
+        this.collider.height = (this.renderable.height - 6) * this.engine.game.foregroundImageScale;
+        this.dead = false;
     }
     
     particles() {
@@ -140,6 +169,10 @@ class Boat extends Entity2D {
     
     update(delta) {
         this.wake.update(delta);
+        //this.collider.transform.y = this.transform.y - 3;
+        //this.collider.width = this.renderable.width * this.engine.game.foregroundImageScale;
+        //this.collider.height = (this.renderable.height - 6) * this.engine.game.foregroundImageScale;
+        //console.log(this.collider.width + " " + this.collider.height);
     }
     
     render(context, canvas) {
@@ -153,11 +186,25 @@ class Boat extends Entity2D {
         context.rotate(this.transform.r);
         context.drawAnimation(this.renderable, -w*s/2, -h*s/2, w * s, h * s);
         context.restore();
+        
+        /*
+        // DEBUG - draws collider
+        context.beginPath();
+        if (this.dead) context.strokeStyle="red";
+        else context.strokeStyle="black";
+        context.moveTo(this.collider.vertices[0].x, this.collider.vertices[0].y);
+        context.lineTo(this.collider.vertices[1].x, this.collider.vertices[1].y);
+        context.lineTo(this.collider.vertices[3].x, this.collider.vertices[3].y);
+        context.lineTo(this.collider.vertices[2].x, this.collider.vertices[2].y);
+        context.lineTo(this.collider.vertices[0].x, this.collider.vertices[0].y);
+        context.stroke();
+        */
     }
     
     turn(delta) {
         var r = this.engine.game.boatRotationSpeed * this.engine.game.speed * delta/16;
-        this.transform.r = Math.max(-Math.PI/6, Math.min(this.transform.r+r, Math.PI/3));
+        this.transform.r = Math.max(-Math.PI/3, Math.min(this.transform.r+r, Math.PI/3));
+        this.collider.transform = this.transform;
     }
     
     move(delta) {
@@ -165,11 +212,16 @@ class Boat extends Entity2D {
         this.v = bound(this.v+Math.sin(this.transform.r)*a, -1.5, 1.5);
         //this.v -= Math.sin(this.rot) * (this.temp.boost || 0);
         var m = this.v * this.engine.game.speed * delta/16;
-        this.transform.x = bound(this.transform.x+m, 30, this.engine.canvas.width - 30);
-        if (this.transform.x == 30 || this.transform.x == this.engine.canvas.width - 30) 
+        this.transform.x = bound(this.transform.x+m, 40, this.engine.canvas.width - 30);
+        if (this.transform.x == 40 || this.transform.x == this.engine.canvas.width - 30) 
             this.v = 0;
+        this.collider.transform = new Transform2D(this.transform.position.copy().sub(new Vector2D(0, 4)), this.transform.r);
     }
     
+    die() {
+        this.dead = true;
+        this.wake.stop();
+    }
 }
 
 class WakeParticle extends SquareParticle2D { 

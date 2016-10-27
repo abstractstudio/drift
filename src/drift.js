@@ -12,9 +12,12 @@ class Drift extends Engine2D {
         this.states.add("menu", MenuState);
         this.states.add("play", PlayState);
         this.states.add("pause", PauseState);
+        this.states.add("gameover", GameOverState);
         this.states.link("menu", "play"); //, MenuPlayTransition);
         this.states.link("play", "pause"); //, MenuPlayTransition);
         this.states.link("pause", "play"); //, MenuPlayTransition);
+        this.states.link("play", "gameover");
+        this.states.link("gameover", "play");
         this.assets.queue("water", IMAGE, "assets/water.png");
         this.assets.queue("boat", ANIMATION, "assets/boat.png", {frameIndex: 1, columns: 3});
         this.assets.queue("obstacles", ANIMATION, "assets/obstacles2.png", {rows: 2, columns: 3});
@@ -31,7 +34,8 @@ class Drift extends Engine2D {
         water.renderable = this.assets.get("water");
         this.entities.add("water", water);
         var boat = new Boat(this);
-        boat.renderable = this.assets.get("boat")
+        boat.renderable = this.assets.get("boat");
+        boat.reset();
         this.entities.add("boat", boat);
         var obstacles = [];
         for (var i = 0; i < this.game.difficulty; i++) {
