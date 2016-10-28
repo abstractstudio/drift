@@ -113,7 +113,7 @@ class Obstacle extends Entity2D {
         this.transform.y = -Math.random() * this.engine.canvas.height - this.radius;
         if (this.renderable) this.renderable.frame(Math.floor(Math.random() * 5));
         this.collider.transform = this.transform;
-        this.collider.radius = this.radius - 2;
+        this.collider.radius = this.radius - 3;
 	}
     
     update(delta) {
@@ -170,10 +170,6 @@ class Boat extends Entity2D {
     
     update(delta) {
         this.wake.update(delta);
-        //this.collider.transform.y = this.transform.y - 3;
-        //this.collider.width = this.renderable.width * this.engine.game.foregroundImageScale;
-        //this.collider.height = (this.renderable.height - 6) * this.engine.game.foregroundImageScale;
-        //console.log(this.collider.width + " " + this.collider.height);
     }
     
     render(context, canvas) {

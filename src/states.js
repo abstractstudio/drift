@@ -157,7 +157,7 @@ class GameOverState extends PlayState {
         var boat = this.entities.get("boat");
         boat.transform.position.x = canvas.width / 2;
         boat.transform.position.y = 3 * canvas.height / 4;
-        boat.wake.kill();
+        boat.wake.reset();
         boat.reset();
         this.game.score = 0;
 
