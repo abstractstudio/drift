@@ -95,7 +95,8 @@ class Obstacle extends Entity2D {
             if (obstacle === this) continue;
 						
             /* Fail and send to bottom if colliding with another or too close. */
-            if (Vector2D.distance(this.transform.position, obstacle.transform.position) < this.radius + obstacle.radius + this.engine.entities.get("boat").height * Math.sqrt(this.engine.game.speed*1.2)) {
+            if (Vector2D.distance(this.transform.position, obstacle.transform.position)
+                < this.radius + obstacle.radius + this.engine.entities.get("boat").renderable.height * Math.sqrt(this.engine.game.speed*1.2)) {
                 this.transform.y = this.engine.canvas.height + this.radius + 1;
 				break;
             }
@@ -129,7 +130,7 @@ class Obstacle extends Entity2D {
         context.drawAnimation(this.renderable, -this.radius, -this.radius, this.radius * 2, this.radius * 2);
         context.restore();
         
-        /*
+        
         // DEBUG - draws collider
         context.save();
         context.translate(this.collider.transform.x, this.collider.transform.y);
@@ -139,7 +140,7 @@ class Obstacle extends Entity2D {
         context.arc(0, 0, this.collider.radius, 0, 2*Math.PI);
         context.stroke();
         context.restore();
-        */
+        
     }
 }
 
@@ -184,7 +185,7 @@ class Boat extends Entity2D {
         context.drawAnimation(this.renderable, -w*s/2, -h*s/2, w * s, h * s);
         context.restore();
         
-        /*
+        
         // DEBUG - draws collider
         context.beginPath();
         if (this.dead) context.strokeStyle="red";
@@ -195,7 +196,7 @@ class Boat extends Entity2D {
         context.lineTo(this.collider.vertices[2].x, this.collider.vertices[2].y);
         context.lineTo(this.collider.vertices[0].x, this.collider.vertices[0].y);
         context.stroke();
-        */
+        
     }
     
     turn(delta) {
