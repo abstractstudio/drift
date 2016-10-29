@@ -39,10 +39,9 @@ class Drift extends Engine2D {
         boat.reset();
         this.entities.add("boat", boat);
         var obstacles = [];
-        for (var i = 0; i < this.game.difficulty; i++) {
-            obstacles[i] = new Obstacle(this, this.assets.get("obstacles").copy());
-        }
         this.entities.add("obstacles", obstacles);
+        for (var i = 0; i < this.game.difficulty; i++)
+            obstacles[i] = new Obstacle(this, this.assets.get("obstacles").copy());
         this.states.go("menu");
     }
     

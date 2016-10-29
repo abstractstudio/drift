@@ -29,7 +29,7 @@ class Title extends Entity2D {
         context.fillText("Created by Abstract Studio", this.transform.x, this.transform.y + 30);
         if (Math.floor(Date.now() / 500) % 2 == 0) {
             context.font = "12px Arcade";
-            context.fillText("PRESS SPACE TO START", canvas.width/2, this.transform.y + 80);
+            context.fillText("PRESS SPACE TO START", canvas.width/2, this.transform.y + 120);
         }
     }
 
@@ -76,7 +76,7 @@ class Obstacle extends Entity2D {
         /* Collisions. */
         this.collider = new CircleCollider2D(this.transform, this.radius);
         
-        this.randomize();
+        this.respawn();
     }
     
     /** Respawn the obstacle. */
@@ -95,8 +95,11 @@ class Obstacle extends Entity2D {
             if (obstacle === this) continue;
             		
             /* Fail and send to bottom if colliding with another or too close. */
-            if (Vector2D.distance(this.transform.position, obstacle.transform.position)
-                < this.radius*2 + obstacle.radius*2 + this.engine.entities.get("boat").renderable.height * Math.sqrt(this.engine.game.speed*1.2)) {
+            var distance = Vector2D.distance(this.transform.position, obstacle.transform.position);
+            var height = this.engine.entities.get("boat").renderable.height;
+            var min = this.radius*2 + obstacle.radius*2;
+                        
+            if (distance < min + height * Math.sqrt(this.engine.game.speed*1.2)) {
                 this.transform.y = this.engine.canvas.height + this.radius + 100;
 				break;
             }

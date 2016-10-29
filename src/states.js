@@ -31,7 +31,6 @@ class MenuState extends State {
                 var m = this.game.mode;
                 var ms = this.game.modes;
                 this.game.mode = ms[(ms.indexOf(m) + 1) % ms.length];
-                console.log(this.game.mode);
             }
         }
     }
@@ -143,6 +142,13 @@ class GameOverState extends PlayState {
     update(delta) {
         if (this.input.keyboard[KEY.SPACE] == BUTTON.PRESSED) {
             this.states.go("play");
+        }
+        if (this.input.mouse[MOUSE.LEFT] == BUTTON.PRESSED) {
+            if (inside(this.input.mouse, this.engine.canvas.width - 100, this.engine.canvas.width, 0, 30)) {
+                var m = this.game.mode;
+                var ms = this.game.modes;
+                this.game.mode = ms[(ms.indexOf(m) + 1) % ms.length];
+            }
         }
     }
     
