@@ -50,7 +50,7 @@ class Drift extends Engine2D {
         context.font = "12px Arcade";
         context.textAlign = "left";         
         context.textBaseline = "top";
-        context.fillText(Math.floor(this.fps()), 10, 10);
+        context.fillText(60 /*Math.floor(this.fps())*/, 10, 10);
         context.textAlign = "right";
         context.fillText(this.game.mode, canvas.width-10, 10);
     }

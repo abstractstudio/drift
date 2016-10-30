@@ -27,10 +27,31 @@ class Title extends Entity2D {
         context.fillText("CHINCOTEAGUE DRIFT", this.transform.x, this.transform.y);
         context.font = "12px Arcade";
         context.fillText("Created by Abstract Studio", this.transform.x, this.transform.y + 30);
-        if (Math.floor(Date.now() / 500) % 2 == 0) {
+        if (Math.floor(Date.now() / 500) % 3 < 2) {
             context.font = "12px Arcade";
             context.fillText("PRESS SPACE TO START", canvas.width/2, this.transform.y + 120);
         }
+        
+        var h = canvas.height * 3 / 4;
+        var m = canvas.width / 2;
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(m + 60, h);
+        context.lineTo(m + 90, h);
+        context.moveTo(m - 60, h);
+        context.lineTo(m - 90, h);
+        context.stroke();
+        context.moveTo(m + 100, h);
+        context.lineTo(m + 90, h + 4);
+        context.lineTo(m + 90, h - 4);
+        context.fill();
+        context.stroke();
+        context.moveTo(m - 100, h);
+        context.lineTo(m - 90, h + 4);
+        context.lineTo(m - 90, h - 4);
+        context.fill();
+        context.fillText("D", m + 75, h - 20);
+        context.fillText("A", m - 75, h - 20);
     }
 
 }
