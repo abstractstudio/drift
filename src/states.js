@@ -156,7 +156,7 @@ class GameOverState extends PlayState {
         super.render(context, canvas);
         context.textAlign = "center";
         context.font = "24px Arcade";
-        context.fillText("YOU DIED", canvas.width/2, canvas.height/2 - 35);
+        context.fillText("YOU LOST", canvas.width/2, canvas.height/2 - 33);
         context.font = "12px Arcade";
         context.fillText("PRESS SPACE TO PLAY AGAIN", canvas.width/2, canvas.height/2);
     }
