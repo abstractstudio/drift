@@ -1,0 +1,10 @@
+targets:
+  - entry: src/drift.js
+    output: drift.min.js
+source:
+  - src/**.js
+  - abstractengine/src/**.js
+ignore:
+arguments:
+  --language_out ES5
+  --compilation_level SIMPLE_OPTIMIZATIONS
