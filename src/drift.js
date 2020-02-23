@@ -1,7 +1,7 @@
 goog.require("engine.Engine2D");
 goog.require("drift.MenuState");
 goog.require("drift.PlayState");
-//goog.require("drift.MenuPlayTransition");
+goog.require("drift.Game");
 goog.require("drift.Title");
 
 
@@ -22,12 +22,12 @@ class Drift extends Engine2D {
         this.assets.queue("boat", ANIMATION, "assets/boat.png", {frameIndex: 1, columns: 3});
         this.assets.queue("obstacles", ANIMATION, "assets/obstacles2.png", {rows: 2, columns: 3});
         var that = this;
-        window.addEventListener("blur", function() { 
-            if (that.states.current == "play") 
-                that.states.go("pause"); 
+        window.addEventListener("blur", function() {
+            if (that.states.current == "play")
+                that.states.go("pause");
         });
     }
-    
+
     load() {
         this.entities.add("title", new Title(this));
         var water = new Water(this);

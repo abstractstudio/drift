@@ -4,7 +4,6 @@ targets:
 source:
   - src/**.js
   - abstractengine/src/**.js
-ignore:
 arguments:
-  --language_out ES5
-  --compilation_level SIMPLE_OPTIMIZATIONS
+  --language_out: ES5
+  --compilation_level: SIMPLE_OPTIMIZATIONS
